@@ -89,6 +89,7 @@ footer{margin-top:auto;padding:14px 10px;opacity:.8;font-size:.95rem}
 .card.en{ color:#0b1530; /* text dark over pastel stripes */ }
 .card.jp{
   background:transparent; border:3px dashed var(--outline); color:var(--ink);
+  white-space:pre-line;
 }
 .card.dragging{opacity:.65; transform:scale(1.04)}
 .card.locked{opacity:.6; pointer-events:none}
@@ -136,7 +137,7 @@ footer{margin-top:auto;padding:14px 10px;opacity:.8;font-size:.95rem}
 .blueGlow{background:#0d2b7a; box-shadow:inset 0 0 60px 30px #2b7bff}
 .goldGlow{background:#725c00; box-shadow:inset 0 0 80px 40px #ffd166}
 
-/* Confetti (only on perfect) */
+/* Full-screen confetti (perfect only) */
 .confetti{
   position:fixed; width:10px; height:10px; border-radius:50%;
   top:-10px; left:0;
@@ -146,6 +147,27 @@ footer{margin-top:auto;padding:14px 10px;opacity:.8;font-size:.95rem}
 @keyframes fall{
   0%{transform:translateY(0) rotate(0)}
   100%{transform:translateY(110vh) rotate(720deg)}
+}
+
+/* Mini confetti & poof (per-card effects) */
+.bit{
+  position:fixed; width:8px; height:8px; border-radius:2px;
+  pointer-events:none; z-index:20; animation:pop 650ms ease-out forwards;
+}
+@keyframes pop{
+  0%{opacity:1; transform:translate(0,0) scale(1) rotate(0deg)}
+  100%{opacity:0; transform:translate(var(--dx),var(--dy)) scale(0.9) rotate(540deg)}
+}
+.poof{
+  position:fixed; width:20px; height:20px; border-radius:50%;
+  background:radial-gradient(closest-side, rgba(74,222,128,.9) 0%, rgba(34,197,94,.6) 55%, rgba(34,197,94,0) 70%);
+  filter:blur(2px);
+  pointer-events:none; z-index:19;
+  animation:puff 750ms ease-out forwards;
+}
+@keyframes puff{
+  0%{opacity:.95; transform:translate(-50%,-50%) scale(.6)}
+  100%{opacity:0; transform:translate(-50%,-50%) scale(4.2)}
 }
 
 /* Layout helpers */
@@ -158,11 +180,11 @@ hr.sep{border:0;height:1px;background:linear-gradient(90deg,transparent,#ffffff3
 <header>
   <h1>THE BOO-RICULUM</h1>
   <h2>GAMES &amp; QUIZZES</h2>
-  <div class="subtitle">January Week 1 – New Beginnings &amp; Goals / １月第１週 – 新しい始まりと目標</div>
+  <div class="subtitle">January Week 1 - Vocabulary / １月第１週 - 語彙</div>
   <hr class="sep">
 </header>
 
-<!-- PAGE: Round container (used for R1, R2, R3) -->
+<!-- PAGE: Round container -->
 <section id="page-round" class="page active">
   <div class="round-wrap">
     <div id="col-en" class="col"></div>
@@ -232,6 +254,57 @@ let audioUnlocked = false;
 const $ = sel => document.querySelector(sel);
 function shuffle(a){ return a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]); }
 
+/* Robust SFX: clone and play so it triggers every time */
+function playSfx(id){
+  const srcEl = document.getElementById(id);
+  if(!srcEl) return;
+  const a = srcEl.cloneNode(true);
+  a.setAttribute('playsinline','');
+  a.currentTime = 0;
+  a.volume = srcEl.volume ?? 1;
+  // Append to DOM so some mobile browsers play reliably
+  document.body.appendChild(a);
+  a.play().catch(()=>{}).finally(()=>setTimeout(()=>a.remove(), 1500));
+}
+
+/* Position helpers for effects */
+function centerOf(el){
+  const r = el.getBoundingClientRect();
+  return { x: r.left + r.width/2, y: r.top + r.height/2 };
+}
+
+/* Confetti burst around a card (per correct) */
+function burstConfettiAt(el, count=20){
+  const {x,y} = centerOf(el);
+  for(let i=0;i<count;i++){
+    const bit = document.createElement('div');
+    bit.className = 'bit';
+    bit.style.left = x + 'px';
+    bit.style.top  = y + 'px';
+    const angle = Math.random()*2*Math.PI;
+    const dist = 40 + Math.random()*70;
+    const dx = Math.cos(angle)*dist;
+    const dy = Math.sin(angle)*dist - 10;
+    bit.style.setProperty('--dx', dx+'px');
+    bit.style.setProperty('--dy', dy+'px');
+    bit.style.background = `hsl(${Math.random()*360},100%,60%)`;
+    document.body.appendChild(bit);
+    setTimeout(()=>bit.remove(), 700);
+  }
+}
+
+/* Green fart cloud on wrong */
+function fartPoofAt(el){
+  const {x,y} = centerOf(el);
+  const p = document.createElement('div');
+  p.className = 'poof';
+  p.style.left = x + 'px';
+  p.style.top  = y + 'px';
+  document.body.appendChild(p);
+  setTimeout(()=>p.remove(), 800);
+}
+
+/* Mobile audio unlock (once) */
 function unlockAudioOnce(){
   if(audioUnlocked) return;
   const ids = ["s_ding","s_fart","s_r05","s_r610","s_r1114","s_r15"];
@@ -339,7 +412,6 @@ $("#checkBtn").addEventListener('click', ()=>{
   // grade each JP card in DOM order
   $("#checkBtn").disabled = true;
   let i = 0;
-  const ding = $("#s_ding"), fart = $("#s_fart");
 
   const step = setInterval(()=>{
     if(i >= jpOrder.length){
@@ -362,16 +434,18 @@ $("#checkBtn").addEventListener('click', ()=>{
       // correct
       card.classList.remove('wrong'); // just in case
       card.classList.add('correct','locked');
-      try{ ding.currentTime = 0; ding.play(); }catch(e){}
+      playSfx('s_ding');           // reliable every time
+      burstConfettiAt(card, 22);   // per-card confetti
       totalScore++;
     } else {
       // wrong
       card.classList.remove('correct');
       card.classList.add('wrong');
-      try{ fart.currentTime = 0; fart.play(); }catch(e){}
+      playSfx('s_fart');           // reliable every time
+      fartPoofAt(card);            // green fart cloud
     }
     i++;
-  }, 750);
+  }, 800);
 });
 
 /* --------------------
