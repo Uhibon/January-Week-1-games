@@ -5,254 +5,425 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Booha Drag & Drop – January Week 1</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Noto+Sans+JP:wght@500&display=swap" rel="stylesheet">
+
 <style>
 :root{
   --dark:#0b1530;
+  --ink:#ffffff;
   --green:#38d96f;
   --red:#e53935;
-  --pink:#ff7eb9;
-  --blue:#5ee6ff;
-  --orange:#ffad33;
+  --outline:#ffffffcc;
+  --check:#22c55e;
+  --checkGlow:0 0 12px rgba(34,197,94,.9), 0 0 28px rgba(34,197,94,.5);
   --gold:#ffd166;
 }
+
+/* base */
 *{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
 body{
-  background:var(--dark);color:#fff;font-family:'Noto Sans JP',sans-serif;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  min-height:100vh;overflow:hidden;text-align:center;
+  min-height:100%;
+  background:var(--dark);
+  color:var(--ink);
+  font-family:'Noto Sans JP',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  display:flex;flex-direction:column;align-items:center;
 }
-h1{font-family:'Cinzel',serif;margin-bottom:10px;}
-#game,#results{width:100%;max-width:800px;display:none;flex-direction:column;align-items:center;}
-#round{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;width:100%;margin-top:20px;}
-.column{display:flex;flex-direction:column;gap:15px;flex:1;min-width:200px;}
+
+/* Header + footer */
+header{padding:20px 16px 10px;text-align:center}
+header h1{font-family:'Cinzel',serif;letter-spacing:.5px;font-size:clamp(1.2rem,2.8vw,1.6rem);opacity:.9}
+header h2{font-family:'Cinzel',serif;letter-spacing:1px;margin-top:4px;font-size:clamp(1.6rem,4.2vw,2.2rem);text-shadow:0 0 10px rgba(255,255,255,.12)}
+footer{margin-top:auto;padding:14px 10px;opacity:.8;font-size:.95rem}
+
+/* Pages */
+.page{width:100%;max-width:980px;margin:0 auto;display:none;padding:8px 16px 24px}
+.page.active{display:block}
+
+/* Round layout */
+.round-wrap{display:flex;gap:26px;align-items:flex-start;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.col{flex:1 1 420px;max-width:460px;display:flex;flex-direction:column;gap:14px}
+
+/* Candy stripes */
+@keyframes stripesV{from{background-position:0 0}to{background-position:0 120px}}
+@keyframes stripesH{from{background-position:0 0}to{background-position:120px 0}}
+.stripes-vertical{
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,.15) 0 18px,
+      rgba(255,255,255,.05) 18px 36px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      #ff7eb980 0 14px,
+      #5ee6ff80 14px 28px,
+      #ffd16680 28px 42px
+    );
+  background-size:100% 120px, 100% 120px;
+  animation:stripesV 3.5s linear infinite;
+}
+.stripes-horizontal{
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,.16) 0 18px,
+      rgba(255,255,255,.06) 18px 36px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      #ff7eb980 0 14px,
+      #5ee6ff80 14px 28px,
+      #ffd16680 28px 42px
+    );
+  background-size:120px 100%, 120px 100%;
+  animation:stripesH 3.5s linear infinite;
+}
+
+/* Cards */
 .card{
-  background:rgba(255,255,255,0.1);
-  border-radius:20px;padding:20px;min-height:80px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:clamp(1.4rem,4vw,2.2rem);
-  transition:transform .2s,background .3s;
+  border-radius:24px; min-height:92px; padding:18px 20px;
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  font-size:clamp(1.6rem,4.6vw,2.6rem); font-weight:700; line-height:1.2;
+  user-select:none; transition:transform .15s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
 }
-.card.dragging{opacity:0.5;transform:scale(1.05);}
-.card.correct{background:var(--green);}
-.card.wrong{background:var(--red);animation:shake .4s;}
+.card.en{ color:#0b1530; /* text dark over pastel stripes */ }
+.card.jp{
+  background:transparent; border:3px dashed var(--outline); color:var(--ink);
+}
+.card.dragging{opacity:.65; transform:scale(1.04)}
+.card.locked{opacity:.6; pointer-events:none}
+
+/* Combined (after drop) */
+.card.combined{
+  color:#0b1530;
+  border:0;
+  display:flex; flex-direction:column; gap:6px;
+}
+.card.combined .enTxt{font-size:1em; font-weight:800}
+.card.combined .jpTxt{font-size:.64em; opacity:.9}
+
+/* Check states */
+.correct{background:var(--green)!important; color:#03210f!important; border:0!important}
+.wrong{background:var(--red)!important; color:#fff!important; border:0!important; animation:shake .45s}
 @keyframes shake{
-  0%,100%{transform:translateX(0);}
-  25%{transform:translateX(-8px);}
-  75%{transform:translateX(8px);}
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-6px)}
+  80%{transform:translateX(6px)}
 }
-button{
-  margin-top:25px;padding:12px 40px;border:none;border-radius:30px;
-  background:var(--pink);color:#fff;font-weight:bold;font-size:1.2rem;cursor:pointer;
-  transition:.3s;
+
+/* Buttons */
+.actions{display:flex;gap:14px;justify-content:center;margin-top:18px}
+.btn{
+  border:0; border-radius:28px; padding:12px 34px; font-weight:800; font-size:1.1rem; cursor:pointer;
+  transition:transform .08s ease, box-shadow .2s ease, filter .2s ease;
 }
-button:hover{background:var(--blue);color:#000;}
-#checkBtn:disabled{opacity:.4;cursor:not-allowed;}
-#results h2{font-family:'Cinzel',serif;font-size:2rem;margin-bottom:20px;}
-.redGlow{background:#c00;box-shadow:0 0 40px 20px #f00 inset;}
-.orangeGlow{background:#ff7b00;box-shadow:0 0 40px 20px #ff7b00 inset;}
-.blueGlow{background:#0066ff;box-shadow:0 0 40px 20px #00f inset;}
-.goldGlow{background:#ffd700;box-shadow:0 0 60px 25px #ffd700 inset;}
+.btn:active{transform:translateY(1px)}
+.btn-green{
+  background:var(--check); color:#062a12; box-shadow:var(--checkGlow)
+}
+.btn-green:disabled{filter:saturate(.2) brightness(.8); box-shadow:none; cursor:not-allowed}
+
+/* Results */
+.result-box{max-width:820px;margin:30px auto 10px;text-align:center}
+.result-msg{font-family:'Noto Sans JP',sans-serif;font-size:clamp(1.6rem,5vw,2.4rem);margin-bottom:10px}
+.result-score{font-size:clamp(1.2rem,4.2vw,1.8rem);opacity:.95}
+
+/* Glow backgrounds */
+.redGlow{background:#900; box-shadow:inset 0 0 60px 30px #ff2b2b}
+.orangeGlow{background:#a34f00; box-shadow:inset 0 0 60px 30px #ff9e2b}
+.blueGlow{background:#0d2b7a; box-shadow:inset 0 0 60px 30px #2b7bff}
+.goldGlow{background:#725c00; box-shadow:inset 0 0 80px 40px #ffd166}
+
+/* Confetti (only on perfect) */
 .confetti{
-  position:fixed;width:10px;height:10px;border-radius:50%;
-  animation:fall 1s linear forwards;
+  position:fixed; width:10px; height:10px; border-radius:50%;
+  top:-10px; left:0;
+  animation:fall 1.2s linear forwards;
+  pointer-events:none; z-index:10;
 }
 @keyframes fall{
-  0%{transform:translateY(0) rotate(0);}
-  100%{transform:translateY(400px) rotate(720deg);}
+  0%{transform:translateY(0) rotate(0)}
+  100%{transform:translateY(110vh) rotate(720deg)}
 }
+
+/* Layout helpers */
+hr.sep{border:0;height:1px;background:linear-gradient(90deg,transparent,#ffffff33,transparent);margin:12px 0 8px}
+.subtitle{opacity:.85;font-size:.95rem;letter-spacing:.08em}
 </style>
 </head>
 <body>
 
-<h1>January Week 1 – Drag & Drop Match-Up</h1>
+<header>
+  <h1>THE BOO-RICULUM</h1>
+  <h2>GAMES &amp; QUIZZES</h2>
+  <div class="subtitle">January Week 1 – New Beginnings &amp; Goals / １月第１週 – 新しい始まりと目標</div>
+  <hr class="sep">
+</header>
 
-<div id="game">
-  <div id="round"></div>
-  <button id="checkBtn" disabled>CHECK</button>
-</div>
+<!-- PAGE: Round container (used for R1, R2, R3) -->
+<section id="page-round" class="page active">
+  <div class="round-wrap">
+    <div id="col-en" class="col"></div>
+    <div id="col-jp" class="col"></div>
+  </div>
+  <div class="actions">
+    <button id="checkBtn" class="btn btn-green" disabled>CHECK</button>
+  </div>
+</section>
 
-<div id="results">
-  <h2 id="resultMsg"></h2>
-  <button onclick="restart()">Play Again</button>
-</div>
+<!-- PAGE: Results -->
+<section id="page-results" class="page">
+  <div class="result-box">
+    <div id="resultMsg" class="result-msg">結果</div>
+    <div id="resultScore" class="result-score">0/15 (0%)</div>
+  </div>
+  <div class="actions">
+    <button id="playAgain" class="btn btn-green">もう一度</button>
+  </div>
+</section>
 
-<!-- audio placeholders -->
-<audio id="ding" src="assets/audio/ding.mp3"></audio>
-<audio id="fart" src="assets/audio/fart.mp3"></audio>
-<audio id="res05" src="assets/audio/result_0-5.mp3"></audio>
-<audio id="res610" src="assets/audio/result_6-10.mp3"></audio>
-<audio id="res1114" src="assets/audio/result_11-14.mp3"></audio>
-<audio id="res15" src="assets/audio/result_15.mp3"></audio>
+<footer>Bryan's English School</footer>
+
+<!-- Audio (place in assets/audio/) -->
+<audio id="s_ding" src="assets/audio/ding.mp3" preload="auto"></audio>
+<audio id="s_fart" src="assets/audio/fart.mp3" preload="auto"></audio>
+<audio id="s_r05" src="assets/audio/result_0-5.mp3" preload="auto"></audio>
+<audio id="s_r610" src="assets/audio/result_6-10.mp3" preload="auto"></audio>
+<audio id="s_r1114" src="assets/audio/result_11-14.mp3" preload="auto"></audio>
+<audio id="s_r15" src="assets/audio/result_15.mp3" preload="auto"></audio>
 
 <script>
-const VOCAB=[
-{en:"goal",jp:"目標",hira:"もくひょう"},
-{en:"plan",jp:"計画",hira:"けいかく"},
-{en:"future",jp:"未来",hira:"みらい"},
-{en:"dream",jp:"夢",hira:"ゆめ"},
-{en:"challenge",jp:"挑戦",hira:"ちょうせん"},
-{en:"try",jp:"挑戦する",hira:"ちょうせん する"},
-{en:"change",jp:"変える",hira:"かえる"},
-{en:"habit",jp:"習慣",hira:"しゅうかん"},
-{en:"exercise",jp:"運動",hira:"うんどう"},
-{en:"study",jp:"勉強",hira:"べんきょう"},
-{en:"learn",jp:"学ぶ",hira:"まなぶ"},
-{en:"practice",jp:"練習",hira:"れんしゅう"},
-{en:"success",jp:"成功",hira:"せいこう"},
-{en:"focus",jp:"集中",hira:"しゅうちゅう"},
-{en:"motivation",jp:"やる気",hira:"やるき"}
+/* --------------------
+   DATA: 15 vocab items
+---------------------*/
+const MASTER = [
+  {en:"goal",jp:"目標",hira:"もくひょう"},
+  {en:"plan",jp:"計画",hira:"けいかく"},
+  {en:"future",jp:"未来",hira:"みらい"},
+  {en:"dream",jp:"夢",hira:"ゆめ"},
+  {en:"challenge",jp:"挑戦",hira:"ちょうせん"},
+  {en:"try",jp:"挑戦する",hira:"ちょうせん する"},
+  {en:"change",jp:"変える",hira:"かえる"},
+  {en:"habit",jp:"習慣",hira:"しゅうかん"},
+  {en:"exercise",jp:"運動",hira:"うんどう"},
+  {en:"study",jp:"勉強",hira:"べんきょう"},
+  {en:"learn",jp:"学ぶ",hira:"まなぶ"},
+  {en:"practice",jp:"練習",hira:"れんしゅう"},
+  {en:"success",jp:"成功",hira:"せいこう"},
+  {en:"focus",jp:"集中",hira:"しゅうちゅう"},
+  {en:"motivation",jp:"やる気",hira:"やるき"}
 ];
 
-let round=1,score=0,connections={},locked=false;
+/* --------------------
+   State
+---------------------*/
+let rounds = [];      // 3 arrays of 5 items each
+let roundIndex = 0;   // 0..2
+let totalScore = 0;   // 0..15
+let connections = {}; // jp -> en chosen
+let jpOrder = [];     // DOM order for top-to-bottom checking
+let audioUnlocked = false;
 
-function shuffle(a){return a.sort(()=>Math.random()-0.5);}
+/* --------------------
+   Utilities
+---------------------*/
+const $ = sel => document.querySelector(sel);
+function shuffle(a){ return a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]); }
 
-function startGame(){
-  round=1;score=0;document.body.className="";
-  document.getElementById("results").style.display="none";
-  document.getElementById("game").style.display="flex";
+function unlockAudioOnce(){
+  if(audioUnlocked) return;
+  const ids = ["s_ding","s_fart","s_r05","s_r610","s_r1114","s_r15"];
+  ids.forEach(id=>{
+    const el = document.getElementById(id);
+    try { el.volume = 1.0; el.currentTime = 0; el.play().then(()=>el.pause()).catch(()=>{}); }
+    catch(e){}
+  });
+  audioUnlocked = true;
+}
+window.addEventListener('pointerdown', unlockAudioOnce, {once:true});
+
+/* --------------------
+   Build rounds (shuffle ONCE per session)
+---------------------*/
+function initGame(){
+  totalScore = 0;
+  roundIndex = 0;
+  document.body.className = '';
+  $("#page-results").classList.remove('active');
+  $("#page-round").classList.add('active');
+
+  const shuffled = shuffle([...MASTER]);
+  rounds = [shuffled.slice(0,5), shuffled.slice(5,10), shuffled.slice(10,15)];
   loadRound();
 }
 
+/* --------------------
+   Round UI
+---------------------*/
 function loadRound(){
-  connections={};locked=false;
-  document.getElementById("checkBtn").disabled=true;
-  const start=(round-1)*5;
-  const set=shuffle(VOCAB).slice(start,start+5);
-  const leftCol=document.createElement("div");
-  leftCol.className="column";
-  const rightCol=document.createElement("div");
-  rightCol.className="column";
-  const jpList=shuffle([...set]);
+  connections = {};
+  const set = rounds[roundIndex];
 
-  set.forEach(item=>{
-    const div=document.createElement("div");
-    div.className="card";
-    div.textContent=item.en;
-    div.draggable=true;
-    div.dataset.en=item.en;
-    div.addEventListener("dragstart",dragStart);
-    leftCol.appendChild(div);
+  const colEn = $("#col-en");
+  const colJp = $("#col-jp");
+  colEn.innerHTML = "";
+  colJp.innerHTML = "";
+
+  // English cards (draggable) — animated vertical stripes
+  shuffle([...set]).forEach(item=>{
+    const c = document.createElement('div');
+    c.className = 'card en stripes-vertical';
+    c.draggable = true;
+    c.textContent = item.en;
+    c.dataset.en = item.en;
+    c.addEventListener('dragstart', e=>{
+      e.dataTransfer.setData('text/en', item.en);
+      c.classList.add('dragging');
+    });
+    c.addEventListener('dragend', ()=>c.classList.remove('dragging'));
+    colEn.appendChild(c);
   });
 
-  jpList.forEach(item=>{
-    const div=document.createElement("div");
-    div.className="card";
-    div.textContent=`${item.jp}\n(${item.hira})`;
-    div.dataset.jp=item.jp;
-    div.addEventListener("dragover",allowDrop);
-    div.addEventListener("drop",drop);
-    rightCol.appendChild(div);
+  // JP cards (droppable) — outline only
+  shuffle([...set]).forEach(item=>{
+    const c = document.createElement('div');
+    c.className = 'card jp';
+    c.dataset.jp = item.jp;
+    c.dataset.hira = item.hira;
+    c.dataset.connected = ""; // not connected yet
+    c.textContent = `${item.jp}\n(${item.hira})`;
+
+    c.addEventListener('dragover', e=>e.preventDefault());
+    c.addEventListener('drop', e=>{
+      e.preventDefault();
+      const en = e.dataTransfer.getData('text/en');
+      if(!en) return;
+
+      // If already connected to something, allow replacing: first unhide previous EN card
+      if(c.dataset.connected){
+        const oldEnCard = document.querySelector(`.en[data-en="${c.dataset.connected}"]`);
+        if(oldEnCard) oldEnCard.style.visibility='visible';
+      }
+
+      // Hide the dragged EN card
+      const enCard = document.querySelector(`.en[data-en="${en}"]`);
+      if(enCard) enCard.style.visibility='hidden';
+
+      // Combine visuals on JP side with horizontal stripes
+      c.classList.add('combined','stripes-horizontal');
+      c.classList.remove('jp');
+      c.innerHTML = `<div class="enTxt">${en}</div><div class="jpTxt">${item.jp}（${item.hira}）</div>`;
+      c.dataset.connected = en;
+
+      // Save connection (jp -> en)
+      connections[item.jp] = en;
+
+      // Enable CHECK only when all 5 connected
+      $("#checkBtn").disabled = Object.keys(connections).length !== 5;
+    });
+
+    colJp.appendChild(c);
   });
 
-  const area=document.getElementById("round");
-  area.innerHTML="";
-  area.appendChild(leftCol);
-  area.appendChild(rightCol);
+  // Capture JP card order for top-to-bottom checking
+  jpOrder = Array.from(colJp.querySelectorAll('[data-jp]'));
+  $("#checkBtn").disabled = true;
 }
 
-function dragStart(e){e.dataTransfer.setData("text",e.target.dataset.en);}
+/* --------------------
+   Checking logic (top->bottom)
+---------------------*/
+$("#checkBtn").addEventListener('click', ()=>{
+  // grade each JP card in DOM order
+  $("#checkBtn").disabled = true;
+  let i = 0;
+  const ding = $("#s_ding"), fart = $("#s_fart");
 
-function allowDrop(e){e.preventDefault();}
-
-function drop(e){
-  e.preventDefault();
-  if(locked)return;
-  const enWord=e.dataTransfer.getData("text");
-  const enCard=document.querySelector(`[data-en='${enWord}']`);
-  if(!enCard)return;
-  e.target.textContent=enWord+"  /  "+e.target.textContent;
-  e.target.dataset.connected=enWord;
-  enCard.style.visibility="hidden";
-  connections[e.target.dataset.jp]=enWord;
-  if(Object.keys(connections).length===5)
-    document.getElementById("checkBtn").disabled=false;
-}
-
-document.getElementById("checkBtn").onclick=()=>{
-  locked=true;
-  gradeRound();
-};
-
-function gradeRound(){
-  const jpCards=document.querySelectorAll("[data-jp]");
-  let i=0;
-  const ding=document.getElementById("ding");
-  const fart=document.getElementById("fart");
-
-  const interval=setInterval(()=>{
-    if(i>=jpCards.length){
-      clearInterval(interval);
-      setTimeout(nextRound,1000);
+  const step = setInterval(()=>{
+    if(i >= jpOrder.length){
+      clearInterval(step);
+      // slight pause then next round or results
+      setTimeout(()=>{
+        roundIndex++;
+        if(roundIndex < 3){ loadRound(); }
+        else { showResults(); }
+      }, 900);
       return;
     }
-    const card=jpCards[i];
-    const jp=card.dataset.jp;
-    const en=connections[jp];
-    const correct=VOCAB.find(v=>v.en===en&&v.jp===jp);
-    if(correct){
-      card.classList.add("correct");
-      ding.currentTime=0;ding.play();
-      confetti();
-      score++;
-    }else{
-      card.classList.add("wrong");
-      fart.currentTime=0;fart.play();
+
+    const card = jpOrder[i];
+    const jp = card.dataset.jp;
+    const chosenEn = card.dataset.connected || "";
+    const correctEn = rounds.flat().find(v=>v.jp===jp)?.en;
+
+    if(chosenEn && chosenEn === correctEn){
+      // correct
+      card.classList.remove('wrong'); // just in case
+      card.classList.add('correct','locked');
+      try{ ding.currentTime = 0; ding.play(); }catch(e){}
+      totalScore++;
+    } else {
+      // wrong
+      card.classList.remove('correct');
+      card.classList.add('wrong');
+      try{ fart.currentTime = 0; fart.play(); }catch(e){}
     }
     i++;
-  },800);
-}
+  }, 750);
+});
 
-function nextRound(){
-  round++;
-  if(round<=3){loadRound();}
-  else{showResults();}
-}
-
+/* --------------------
+   Results page
+---------------------*/
 function showResults(){
-  document.getElementById("game").style.display="none";
-  const res=document.getElementById("results");
-  res.style.display="flex";
-  const msg=document.getElementById("resultMsg");
-  const r05=document.getElementById("res05");
-  const r610=document.getElementById("res610");
-  const r1114=document.getElementById("res1114");
-  const r15=document.getElementById("res15");
+  $("#page-round").classList.remove('active');
+  $("#page-results").classList.add('active');
 
-  if(score<=5){
-    document.body.className="redGlow";
-    msg.textContent="OH! You didn’t look at the Boo-riculum!!";
-    r05.play();
-  }else if(score<=10){
-    document.body.className="orangeGlow";
-    msg.textContent="Too much YouTube and not enough Boo-riculum.";
-    r610.play();
-  }else if(score<=14){
-    document.body.className="blueGlow";
-    msg.textContent="Good job! Try for a perfect score.";
-    r1114.play();
-  }else{
-    document.body.className="goldGlow";
-    msg.textContent="Wow, you are the smartest person on earth!";
-    r15.play();
-    for(let i=0;i<100;i++)setTimeout(confetti,i*20);
+  const pct = Math.round((totalScore/15)*100);
+  const msgEl = $("#resultMsg");
+  const scoreEl = $("#resultScore");
+
+  // Ranges and sounds
+  let bgClass = 'blueGlow', msg = 'いいね！あと少しでパーフェクト！', snd = $("#s_r1114");
+  if(totalScore <= 5){ bgClass='redGlow'; msg='ブーリキュラム見てないでしょ！'; snd=$("#s_r05"); }
+  else if(totalScore <= 10){ bgClass='orangeGlow'; msg='YouTube見すぎ！ブーリキュラムもやろう！'; snd=$("#s_r610"); }
+  else if(totalScore === 15){ bgClass='goldGlow'; msg='すごい！あなたは地球で一番頭がいい！'; snd=$("#s_r15"); }
+
+  // Apply background glow to whole body
+  document.body.className = bgClass;
+
+  // Set texts
+  msgEl.textContent = msg;
+  scoreEl.textContent = `${totalScore}/15（${pct}%）`;
+
+  // Play result sound
+  try{ snd.currentTime=0; snd.play(); }catch(e){}
+
+  // Confetti rain ONLY on perfect
+  if(totalScore === 15){
+    for(let i=0;i<140;i++){
+      setTimeout(()=>{
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        const left = (Math.random()*100) + 'vw';
+        c.style.left = left;
+        c.style.background = `hsl(${Math.random()*360},100%,60%)`;
+        c.style.animationDuration = (0.9 + Math.random()*0.8)+'s';
+        document.body.appendChild(c);
+        setTimeout(()=>c.remove(), 1800);
+      }, i*12);
+    }
   }
 }
 
-function restart(){startGame();}
+$("#playAgain").addEventListener('click', initGame);
 
-function confetti(){
-  const c=document.createElement("div");
-  c.className="confetti";
-  c.style.background=`hsl(${Math.random()*360},100%,60%)`;
-  c.style.left=Math.random()*window.innerWidth+"px";
-  c.style.top="-10px";
-  c.style.animationDuration=0.8+Math.random()*0.5+"s";
-  document.body.appendChild(c);
-  setTimeout(()=>c.remove(),1200);
-}
-
-startGame();
+/* --------------------
+   Start
+---------------------*/
+initGame();
 </script>
 </body>
 </html>
