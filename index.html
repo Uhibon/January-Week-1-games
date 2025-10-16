@@ -3,124 +3,127 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>The Boo-riculum Games & Quizzes – January Week 1 Matching</title>
-<link rel="icon" type="image/png" href="booha-ghost.png">
+<title>The Boo-riculum Games & Quizzes – January Week 1 (Drag & Drop)</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --ink:#0e1020;--muted:#667085;--paper:#ffffffee;--bg:#0b1530;
-    --accent:#7c3aed;--good:#11b981;--bad:#ef4444;--gold:#f59e0b;
-    --en:#2dd4bf;--jp:#60a5fa;--card:#121a39;--ring:rgba(255,255,255,.12);
+    --ink:#0e1020; --paper:#ffffff; --ring:rgba(255,255,255,.15);
+    --good:#10b981; --bad:#ef4444; --muted:#cdd6f4;
+    --en:#2dd4bf; --jp:#60a5fa; --accent:#7c3aed;
     --radius:22px;
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0}
-  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Noto Sans JP,Helvetica,Arial,sans-serif;background:var(--bg);color:#f5f7ff;overflow-x:hidden}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Noto Sans JP',Helvetica,Arial,sans-serif;color:#fff;overflow-x:hidden;background:#0b1020}
 
-  /* Animated Booha stripes background */
-  body::before{
-    content:"";position:fixed;inset:0;z-index:-2;
-    background: repeating-linear-gradient( 45deg,
-      rgba(124,58,237,.15) 0 28px,
-      rgba(45,212,191,.15) 28px 56px,
-      rgba(96,165,250,.15) 56px 84px,
-      rgba(245,158,11,.15) 84px 112px
-    );
-    filter:saturate(120%) blur(0.3px);
-    animation: slide 24s linear infinite;
+  /* FULL-SPECTRUM BACKGROUND (cute, slow color cycling) */
+  body::before{content:"";position:fixed;inset:0;z-index:-2;filter:saturate(115%) blur(.4px);
+    background: conic-gradient(from 0deg at 50% 50%,
+      #ff6ec7, #ffd166, #8aff80, #5ee6ff, #a78bfa, #ff9aa2, #ff6ec7);
+    animation: hueRotate 40s linear infinite;
   }
-  @keyframes slide{from{background-position:0 0}to{background-position:1200px 0}}
+  body::after{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none;mix-blend-mode:soft-light;opacity:.55;
+    background: radial-gradient(1200px 1200px at 20% 20%, rgba(255,255,255,.2), transparent 60%),
+                radial-gradient(1200px 1200px at 80% 80%, rgba(255,255,255,.18), transparent 60%);
+    animation: slowDrift 28s ease-in-out infinite alternate;
+  }
+  @keyframes hueRotate{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+  @keyframes slowDrift{0%{transform:translate(0,0)}100%{transform:translate(-2%,2%)}}
 
-  /* Floating Booha ghost */
-  .ghost{position:fixed;right:3vw;top:12vh;width:72px;height:72px;border-radius:44px 44px 24px 24px;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:5;animation:wobble 4s ease-in-out infinite}
-  .ghost::before,.ghost::after{content:"";position:absolute;border-radius:50%;background:#000}
-  .ghost::before{width:14px;height:14px;left:18px;top:22px;box-shadow:22px 0 0 0 #000}
-  .ghost::after{width:8px;height:8px;left:22px;top:26px;background:#f8f8f8;box-shadow:22px 0 0 0 #f8f8f8}
-  .gh-waves{position:absolute;bottom:-10px;left:0;right:0;height:12px;background:radial-gradient(circle at 10px 6px,#fff 9px,transparent 10px) repeat-x;background-size:24px 12px}
-  @keyframes wobble{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-  .ghost.happy{box-shadow:0 0 0 4px rgba(17,185,129,.35),0 14px 40px rgba(17,185,129,.3)}
-  .ghost.sad{box-shadow:0 0 0 4px rgba(239,68,68,.35),0 14px 40px rgba(239,68,68,.3)}
+  header{padding:22px 6vw 10px;text-align:center}
+  .title{font-family:Cinzel,serif;font-weight:900;letter-spacing:.5px;font-size:clamp(22px,4vw,40px)}
+  .subtitle{margin-top:6px;opacity:.9}
 
-  header{padding:24px 6vw 10px;text-align:center}
-  .title{font-family:Cinzel,serif;font-weight:900;letter-spacing:.5px;font-size:clamp(22px,4vw,40px);}
-  .title .thin{font-weight:700;opacity:.95}
-  .subtitle{margin-top:6px;color:#cbd5ff;opacity:.9}
+  .hud{display:flex;gap:12px;justify-content:center;align-items:center;margin:14px 0 8px;flex-wrap:wrap}
+  .chip{background:rgba(0,0,0,.25);backdrop-filter:blur(6px);border:1px solid var(--ring);padding:8px 12px;border-radius:999px;font-weight:700}
+  .bar{position:relative;height:12px;background:rgba(255,255,255,.18);border-radius:999px;overflow:hidden;width:min(760px,90vw);margin:10px auto}
+  .bar>i{position:absolute;inset:0;transform-origin:left;width:0;background:linear-gradient(90deg,var(--good),#34d399,#a7f3d0)}
 
-  .hud{display:flex;gap:14px;justify-content:center;align-items:center;margin:14px 0 8px;flex-wrap:wrap}
-  .chip{background:rgba(255,255,255,.08);border:1px solid var(--ring);padding:8px 12px;border-radius:999px;font-weight:600}
-  .bar{position:relative;height:12px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;width:min(680px,86vw);margin:10px auto}
-  .bar>i{position:absolute;inset:0;transform-origin:left;width:0;background:linear-gradient(90deg,var(--good),#34d399,#a7f3d0);box-shadow:inset 0 0 10px rgba(255,255,255,.3)}
+  .stage{width:min(1100px,94vw);margin:18px auto 70px;display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
 
-  .board{width:min(1100px,94vw);margin:20px auto 80px;display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
-  .card{position:relative;height:140px;border-radius:var(--radius);background:var(--card);border:1px solid var(--ring);cursor:pointer;transform-style:preserve-3d;transition:transform .5s ease,filter .3s ease;box-shadow:0 6px 18px rgba(0,0,0,.25)}
-  .card:hover{filter:brightness(1.05)}
-  .card.flipped{transform:rotateY(180deg)}
-  .card.matched{cursor:default;outline:2px solid var(--good);box-shadow:0 0 0 4px rgba(17,185,129,.25),0 10px 30px rgba(17,185,129,.25)}
+  .col{display:grid;gap:12px}
+  .label{font-weight:800;opacity:.9;text-align:center}
 
-  .face{position:absolute;inset:0;padding:12px 10px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;backface-visibility:hidden}
-  .front{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));}
-  .back{transform:rotateY(180deg);background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.03));}
+  .card{position:relative;padding:14px 14px;border-radius:var(--radius);border:1px solid var(--ring);
+        background:rgba(0,0,0,.28);backdrop-filter:blur(6px);box-shadow:0 10px 26px rgba(0,0,0,.28);
+        font-weight:800; text-align:center; cursor:grab; touch-action:none; user-select:none;
+        transition:transform .12s ease, filter .2s ease}
+  .card:active{cursor:grabbing}
+  .en{color:var(--en)}
+  .jp{color:var(--jp);font-size:22px}
+  .hira{font-size:13px;opacity:.9;margin-top:4px}
 
-  .enText{font-weight:800;font-size:22px;line-height:1.1;color:var(--en);text-shadow:0 1px 0 rgba(0,0,0,.4)}
-  .jpBox{display:flex;flex-direction:column;gap:6px}
-  .jp{font-weight:800;font-size:22px;line-height:1.1;color:var(--jp)}
-  .hira{font-size:14px;color:#c7d2fe;opacity:.9}
+  .drop{position:relative;padding:16px;border-radius:var(--radius);border:1px dashed rgba(255,255,255,.35);
+        background:rgba(255,255,255,.06);min-height:58px;display:flex;align-items:center;justify-content:center;
+        transition:box-shadow .15s ease, transform .15s ease}
+  .drop.hover{box-shadow:0 0 0 3px rgba(96,165,250,.5) inset, 0 0 18px rgba(96,165,250,.35); transform:scale(1.02)}
+  .drop.locked{border-style:solid;background:rgba(16,185,129,.18);border-color:rgba(16,185,129,.55)}
+  .pair{display:flex;flex-direction:column;gap:4px;align-items:center}
+  .pair .en{font-size:18px}
 
-  .legend{display:flex;gap:12px;justify-content:center;align-items:center;margin:12px auto 0;opacity:.9}
-  .dot{width:12px;height:12px;border-radius:50%}
-
-  .controls{display:flex;gap:12px;justify-content:center;margin:20px auto}
-  button{appearance:none;border:1px solid var(--ring);background:rgba(255,255,255,.08);color:#fff;padding:10px 14px;border-radius:999px;font-weight:700;letter-spacing:.3px;cursor:pointer;transition:filter .2s ease,transform .04s ease;box-shadow:0 8px 22px rgba(0,0,0,.2),inset 0 0 20px rgba(255,255,255,.04)}
+  .controls{display:flex;gap:12px;justify-content:center;margin:16px auto}
+  button{appearance:none;border:1px solid var(--ring);background:rgba(0,0,0,.25);color:#fff;padding:10px 14px;border-radius:999px;font-weight:800;letter-spacing:.3px;cursor:pointer;transition:filter .2s ease,transform .04s ease;box-shadow:0 8px 22px rgba(0,0,0,.2),inset 0 0 20px rgba(255,255,255,.04)}
   button:hover{filter:brightness(1.1)}
   button:active{transform:translateY(1px)}
-  .primary{background:linear-gradient(90deg,#7c3aed,#6366f1);}
+
+  /* Drag clone */
+  .dragging{position:fixed;z-index:30;left:0;top:0;pointer-events:none;transform:translate(-50%,-50%) scale(1.04);filter:drop-shadow(0 18px 28px rgba(0,0,0,.35))}
 
   /* Confetti */
   .confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
   .confetti i{position:absolute;width:8px;height:14px;background:#fff;opacity:.9;will-change:transform}
 
-  /* Toast */
-  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#0f172a;color:#e2e8f0;border:1px solid var(--ring);padding:10px 14px;border-radius:999px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;pointer-events:none}
+  /* Toast & overlay */
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:rgba(0,0,0,.6);backdrop-filter:blur(6px);color:#e2e8f0;border:1px solid var(--ring);padding:10px 14px;border-radius:999px;font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;pointer-events:none}
   .toast.show{animation:toast 1.3s ease}
   @keyframes toast{0%{opacity:0;transform:translate(-50%,6px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-6px)}}
 
-  footer{position:fixed;right:12px;bottom:10px;color:#c7cffb;opacity:.7;font-size:12px}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:50}
+  .overlay.show{display:flex;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .panel{width:min(720px,92vw);background:rgba(0,0,0,.35);border:1px solid var(--ring);border-radius:24px;padding:22px 20px;box-shadow:0 20px 60px rgba(0,0,0,.4);text-align:center}
+  .big{font-size:clamp(20px,3.6vw,36px);font-weight:900;margin:8px 0 6px}
+  .small{opacity:.9}
+
+  .fade{animation:pagefade .45s ease}
+  @keyframes pagefade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
-  <div class="ghost" aria-hidden="true"><div class="gh-waves"></div></div>
-
   <header>
-    <div class="title">The <span class="thin">Boo-riculum</span> Games & Quizzes</div>
-    <div class="subtitle">January Week 1 · Matching Game（英語⇄日本語）</div>
+    <div class="title">The Boo-riculum Games & Quizzes</div>
+    <div class="subtitle">January Week 1 · Drag & Drop Matching（EN → JP）</div>
     <div class="hud">
-      <div class="chip" id="moves">Moves: 0</div>
-      <div class="chip" id="pairs">Pairs: 0 / 15</div>
+      <div class="chip" id="page">Page: 1 / 3</div>
+      <div class="chip" id="score">Score: 0 / 15</div>
       <div class="chip" id="timer">Time: 0:00</div>
+      <div class="chip" id="sound">Sound: On</div>
     </div>
     <div class="bar"><i id="progress"></i></div>
-    <div class="legend">
-      <span class="dot" style="background:var(--en)"></span> EN cards
-      <span class="dot" style="background:var(--jp)"></span> JP cards
-    </div>
   </header>
 
-  <main class="board" id="board" aria-live="polite"></main>
+  <main class="stage fade" id="stage" aria-live="polite">
+    <!-- Filled by JS -->
+  </main>
 
   <div class="controls">
-    <button class="primary" id="newGame">New Game</button>
-    <button id="revealAll">Peek (3s)</button>
-    <button id="soundToggle">Sound: On</button>
+    <button id="restart">Restart</button>
   </div>
 
   <div class="confetti" id="confetti"></div>
-  <div class="toast" id="toast">Good job!</div>
+  <div class="toast" id="toast">Nice!</div>
 
-  <footer>© Booha · Matching Game Prototype</footer>
+  <div class="overlay" id="overlay">
+    <div class="panel">
+      <div class="big" id="finalJP">おつかれさま！</div>
+      <div class="small" id="finalEN">Great work!</div>
+      <div style="margin-top:14px"><button id="again">もう一度</button></div>
+    </div>
+  </div>
 
 <script>
 // -------------------- Data (January Week 1) --------------------
-const VOCAB = [
+const LIST = [
   { id:"goal", en:"goal", jp:"目標", hira:"もくひょう" },
   { id:"plan", en:"plan", jp:"計画", hira:"けいかく" },
   { id:"future", en:"future", jp:"未来", hira:"みらい" },
@@ -138,142 +141,167 @@ const VOCAB = [
   { id:"motivation", en:"motivation", jp:"やる気", hira:"やるき" }
 ];
 
-// -------------------- Utilities --------------------
+// Fixed page groupings for clarity
+const PAGES = [
+  ["goal","plan","future","dream","challenge"],
+  ["try","change","habit","exercise","study"],
+  ["learn","practice","success","focus","motivation"],
+];
+
+// -------------------- Helpers --------------------
 const $ = s => document.querySelector(s);
-const board = $('#board');
-const movesEl = $('#moves');
-const pairsEl = $('#pairs');
+const stage = $('#stage');
+const pageEl = $('#page');
+const scoreEl = $('#score');
 const timerEl = $('#timer');
 const progressEl = $('#progress');
-const ghost = document.querySelector('.ghost');
-const confettiLayer = $('#confetti');
 const toast = $('#toast');
+const confettiLayer = $('#confetti');
+const overlay = $('#overlay');
+const finalJP = $('#finalJP');
+const finalEN = $('#finalEN');
 
-let soundOn = true;
-let timer=0, timerId=null, moves=0, pairs=0, maxPairs=VOCAB.length; 
-let first=null, second=null, lock=false; 
-
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+let page=0, score=0, matched=0, soundOn=true, timer=0, timerId=null;
 function pad(n){return String(n).padStart(2,'0')}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
-// -------------------- Sounds (WebAudio, tiny + fast) --------------------
+// -------------------- Sounds (WebAudio beeps) --------------------
 let actx=null; function ctx(){return actx||(actx=new (window.AudioContext||window.webkitAudioContext)())}
-function beep(type='ok', dur=0.08){ if(!soundOn) return; const c=ctx(); const o=c.createOscillator(); const g=c.createGain();
-  const now=c.currentTime; o.type='sine';
-  if(type==='ok'){ o.frequency.setValueAtTime(880,now); o.frequency.exponentialRampToValueAtTime(1320, now+dur) }
-  if(type==='no'){ o.frequency.setValueAtTime(220,now); o.frequency.exponentialRampToValueAtTime(140, now+dur) }
-  if(type==='flip'){ o.frequency.setValueAtTime(560,now); o.frequency.exponentialRampToValueAtTime(420, now+dur*.8) }
-  g.gain.setValueAtTime(.0001,now); g.gain.exponentialRampToValueAtTime(.2, now+0.01); g.gain.exponentialRampToValueAtTime(.0001, now+dur);
+function beep(type='ok', dur=.08){ if(!soundOn) return; const c=ctx(); const o=c.createOscillator(); const g=c.createGain(); const now=c.currentTime; o.type='sine';
+  if(type==='ok'){ o.frequency.setValueAtTime(900,now); o.frequency.exponentialRampToValueAtTime(1400, now+dur) }
+  if(type==='no'){ o.frequency.setValueAtTime(240,now); o.frequency.exponentialRampToValueAtTime(160, now+dur) }
+  if(type==='next'){ o.frequency.setValueAtTime(660,now); o.frequency.exponentialRampToValueAtTime(990, now+dur*1.2) }
+  g.gain.setValueAtTime(.0001,now); g.gain.exponentialRampToValueAtTime(.22, now+0.01); g.gain.exponentialRampToValueAtTime(.0001, now+dur);
   o.connect(g).connect(c.destination); o.start(); o.stop(now+dur)
 }
 
 // -------------------- Confetti --------------------
-function burstConfetti(x=window.innerWidth/2,y=window.innerHeight/2,count=50){
+function burstConfetti(x=innerWidth/2,y=innerHeight/2,count=50){
   const frag=document.createDocumentFragment();
   for(let i=0;i<count;i++){
     const p=document.createElement('i');
     const size=6+Math.random()*6; p.style.width=size+'px'; p.style.height=(size*1.4)+'px';
-    const left=x+(Math.random()*120-60); const top=y+(Math.random()*40-20);
+    const left=x+(Math.random()*160-80); const top=y+(Math.random()*40-20);
     p.style.left=left+'px'; p.style.top=top+'px';
     const rotate=Math.random()*360; const dr = (Math.random()>.5?1:-1)*(2+Math.random()*4);
     const hue=[280,190,160,40][Math.floor(Math.random()*4)];
     p.style.background=`hsl(${hue} 90% 60%)`;
     p.animate([
       { transform:`translateY(0) rotate(${rotate}deg)`, opacity:1 },
-      { transform:`translateY(${140+Math.random()*200}px) rotate(${rotate+dr*50}deg)`, opacity:0.8 }
-    ], { duration:700+Math.random()*400, easing:'cubic-bezier(.2,.6,.2,1)', fill:'forwards' });
+      { transform:`translateY(${160+Math.random()*220}px) rotate(${rotate+dr*50}deg)`, opacity:0.8 }
+    ], { duration:750+Math.random()*450, easing:'cubic-bezier(.2,.6,.2,1)', fill:'forwards' });
     frag.appendChild(p);
   }
   confettiLayer.appendChild(frag);
-  setTimeout(()=>{confettiLayer.innerHTML=''},1200);
+  setTimeout(()=>{confettiLayer.innerHTML=''},1400);
 }
 
 function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),1200) }
 
-// -------------------- Build Deck --------------------
-function buildDeck(){
-  const enCards = VOCAB.map(v=>({type:'en', id:v.id, label:v.en}));
-  const jpCards = VOCAB.map(v=>({type:'jp', id:v.id, label:v.jp, hira:v.hira}));
-  return shuffle([...enCards, ...jpCards]);
+// -------------------- Render Page --------------------
+function renderPage(){
+  const ids = PAGES[page].slice();
+  const data = ids.map(id=>LIST.find(x=>x.id===id));
+  const left = shuffle(data.map(d=>({id:d.id, en:d.en}))); // EN cards order
+  const right = shuffle(data.map(d=>({id:d.id, jp:d.jp, hira:d.hira}))); // JP targets order
+
+  stage.classList.remove('fade'); void stage.offsetWidth; stage.classList.add('fade');
+  stage.innerHTML = `
+    <div class="col" id="leftCol">
+      <div class="label">English</div>
+      ${left.map(item=>`<div class="card en" data-id="${item.id}" role="button" aria-grabbed="false">${item.en}</div>`).join('')}
+    </div>
+    <div class="col" id="rightCol">
+      <div class="label">日本語</div>
+      ${right.map(item=>`<div class="drop" data-id="${item.id}"><div class="pair"><div class="jp">${item.jp}</div><div class="hira">(${item.hira})</div></div></div>`).join('')}
+    </div>
+  `;
+
+  matched = 0;
+  pageEl.textContent = `Page: ${page+1} / 3`;
+  attachDragHandlers();
 }
 
-// -------------------- Render --------------------
-function render(){
-  const deck=buildDeck();
-  board.innerHTML='';
-  deck.forEach((c,idx)=>{
-    const el=document.createElement('div');
-    el.className='card'; el.dataset.id=c.id; el.dataset.type=c.type; el.dataset.index=idx;
-    el.innerHTML=`
-      <div class="face front"></div>
-      <div class="face back">${ c.type==='en'
-        ? `<div class="enText">${c.label}</div>`
-        : `<div class="jpBox"><div class="jp">${c.label}</div><div class="hira">(${c.hira})</div></div>`
-      }</div>`;
-    el.addEventListener('click',()=>onFlip(el));
-    board.appendChild(el);
+// -------------------- Drag & Drop (pointer-friendly) --------------------
+let dragEl=null, dragClone=null, offsetX=0, offsetY=0;
+function onPointerDown(e){
+  const el = e.currentTarget; dragEl = el; el.setPointerCapture(e.pointerId);
+  const r = el.getBoundingClientRect(); offsetX = e.clientX - (r.left + r.width/2); offsetY = e.clientY - (r.top + r.height/2);
+  dragClone = el.cloneNode(true); dragClone.classList.add('dragging'); document.body.appendChild(dragClone);
+  moveClone(e.clientX, e.clientY);
+}
+function onPointerMove(e){ if(!dragClone) return; moveClone(e.clientX, e.clientY); hoverDrop(e.clientX, e.clientY, true); }
+function onPointerUp(e){ if(!dragClone) return; const t = getDropAt(e.clientX, e.clientY); hoverDrop(e.clientX, e.clientY, false);
+  const id = dragEl.dataset.id;
+  if(t && t.dataset.id === id && !t.classList.contains('locked')){
+    // success
+    t.classList.add('locked'); t.innerHTML = `<div class="pair"><div class="jp">${t.querySelector('.jp').textContent}</div><div class="hira">${t.querySelector('.hira').textContent}</div><div class="en">${dragEl.textContent}</div></div>`;
+    dragEl.style.visibility='hidden';
+    score++; matched++;
+    updateHUD();
+    beep('ok', .12);
+    burstConfetti(e.clientX, e.clientY, 34);
+    if(matched===5){
+      // advance automatically
+      setTimeout(()=>{ nextPage(); }, 700);
+      beep('next', .1);
+    }
+  }else{
+    // fail
+    dragEl.animate([{transform:'translateY(0)'},{transform:'translateY(2px)'}],{duration:120});
+    beep('no', .1);
+  }
+  dragClone.remove(); dragClone=null; dragEl.releasePointerCapture(e.pointerId); dragEl=null;
+}
+function moveClone(x,y){ dragClone.style.left = x+'px'; dragClone.style.top = y+'px'; }
+function getDropAt(x,y){ const el = document.elementFromPoint(x,y); return el?.closest?.('.drop') || null }
+function hoverDrop(x,y,add){ const t = getDropAt(x,y); document.querySelectorAll('.drop.hover').forEach(d=>d.classList.remove('hover')); if(add && t && !t.classList.contains('locked')) t.classList.add('hover') }
+
+function attachDragHandlers(){
+  document.querySelectorAll('.card.en').forEach(el=>{
+    el.addEventListener('pointerdown', onPointerDown);
+    el.addEventListener('pointermove', onPointerMove);
+    el.addEventListener('pointerup', onPointerUp);
+    el.addEventListener('pointercancel', onPointerUp);
   });
 }
 
-// -------------------- Game State --------------------
-function reset(){
-  moves=0; pairs=0; updateHUD(); render();
-  clearInterval(timerId); timer=0; timerEl.textContent='Time: 0:00';
-  timerId=setInterval(()=>{timer++; const m=Math.floor(timer/60), s=timer%60; timerEl.textContent=`Time: ${m}:${pad(s)}`},1000);
-  ghost.classList.remove('happy','sad'); progressEl.style.transform='scaleX(0)';
-}
-
+// -------------------- Flow --------------------
 function updateHUD(){
-  movesEl.textContent=`Moves: ${moves}`;
-  pairsEl.textContent=`Pairs: ${pairs} / ${maxPairs}`;
-  progressEl.style.transform=`scaleX(${pairs/maxPairs})`;
+  scoreEl.textContent = `Score: ${score} / 15`;
+  progressEl.style.transform = `scaleX(${score/15})`;
 }
 
-function onFlip(card){
-  if(lock || card.classList.contains('flipped') || card.classList.contains('matched')) return;
-  beep('flip');
-  card.classList.add('flipped');
-  if(!first){ first=card; return }
-  second=card; moves++; updateHUD();
-  const isMatch = first.dataset.id===second.dataset.id && first.dataset.type!==second.dataset.type;
-  lock=true;
-  if(isMatch){
-    setTimeout(()=>{
-      first.classList.add('matched');
-      second.classList.add('matched');
-      pairs++; updateHUD();
-      ghost.classList.add('happy'); setTimeout(()=>ghost.classList.remove('happy'),400);
-      const rect=second.getBoundingClientRect(); burstConfetti(rect.left+rect.width/2, rect.top+rect.height/2, 36);
-      beep('ok', .12);
-      first=null; second=null; lock=false;
-      if(pairs===maxPairs){
-        burstConfetti(window.innerWidth/2, window.innerHeight/2, 160);
-        showToast('できた！ Completed!');
-        clearInterval(timerId);
-      }
-    },220);
-  }else{
-    ghost.classList.add('sad'); setTimeout(()=>ghost.classList.remove('sad'),300);
-    beep('no', .1);
-    setTimeout(()=>{
-      first.classList.remove('flipped');
-      second.classList.remove('flipped');
-      first=null; second=null; lock=false;
-    },650);
-  }
+function nextPage(){
+  if(page < 2){ page++; renderPage(); }
+  else{ finish(); }
 }
 
-// -------------------- Controls --------------------
-$('#newGame').addEventListener('click',()=>{ reset(); showToast('New game!') });
-$('#revealAll').addEventListener('click',()=>{
-  const cards=[...document.querySelectorAll('.card')];
-  cards.forEach(c=>c.classList.add('flipped'));
-  setTimeout(()=>cards.forEach(c=>c.classList.remove('flipped')), 3000);
-});
-$('#soundToggle').addEventListener('click',e=>{ soundOn=!soundOn; e.target.textContent = `Sound: ${soundOn? 'On':'Off'}`; showToast(soundOn?'Sound on':'Sound off') })
+function finish(){
+  clearInterval(timerId);
+  let jpMsg=""; let enMsg="";
+  if(score<=5){ jpMsg = "あれ？ブーリキュラムを見なかったの？"; enMsg = "Oh no! You didn’t look at the Boo-riculum!" }
+  else if(score<=10){ jpMsg = "YouTubeばかり見ないで英語を練習しよう！"; enMsg = "Stop watching YouTube and start practicing English!" }
+  else if(score<=14){ jpMsg = "いいね！あと少しでパーフェクト！"; enMsg = "Hey, good job! Try for perfect!" }
+  else { jpMsg = "すごい！Week 1 マスター！"; enMsg = "You are a Week 1 master!!!" }
+  finalJP.textContent = jpMsg; finalEN.textContent = enMsg;
+  overlay.classList.add('show');
+  burstConfetti(innerWidth/2, innerHeight/2, 180);
+}
 
-// -------------------- Start --------------------
-reset();
+function restart(){
+  page=0; score=0; matched=0; updateHUD(); renderPage();
+  clearInterval(timerId); timer=0; timerEl.textContent='Time: 0:00';
+  timerId=setInterval(()=>{ timer++; const m=Math.floor(timer/60), s=timer%60; timerEl.textContent = `Time: ${m}:${String(s).padStart(2,'0')}`; },1000);
+  overlay.classList.remove('show');
+}
+
+$('#restart').addEventListener('click', ()=>{ restart(); showToast('Restarted!') });
+$('#again').addEventListener('click', ()=> restart());
+$('#sound').addEventListener('click', (e)=>{ soundOn=!soundOn; e.target.textContent = `Sound: ${soundOn? 'On':'Off'}`; showToast(soundOn? 'Sound on':'Sound off') });
+
+// Start
+restart();
 </script>
 </body>
 </html>
