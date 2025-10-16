@@ -7,301 +7,99 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --ink:#0e1020; --paper:#ffffff; --ring:rgba(255,255,255,.15);
-    --good:#10b981; --bad:#ef4444; --muted:#cdd6f4;
-    --en:#2dd4bf; --jp:#60a5fa; --accent:#7c3aed;
     --radius:22px;
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0}
-  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Noto Sans JP',Helvetica,Arial,sans-serif;color:#fff;overflow-x:hidden;background:#0b1020}
+  body{font-family:Inter,'Noto Sans JP',sans-serif;color:#fff;overflow-x:hidden;
+    animation:colorFade 40s linear infinite; background:hsl(0,80%,50%);
+    transition:background 2s ease;}
+  @keyframes colorFade{
+    0%{background:hsl(0,80%,50%);}20%{background:hsl(60,80%,50%);}40%{background:hsl(120,80%,50%);}60%{background:hsl(180,80%,50%);}80%{background:hsl(240,80%,50%);}100%{background:hsl(300,80%,50%);}}
 
-  /* FULL-SPECTRUM BACKGROUND (cute, slow color cycling) */
-  body::before{content:"";position:fixed;inset:0;z-index:-2;filter:saturate(115%) blur(.4px);
-    background: conic-gradient(from 0deg at 50% 50%,
-      #ff6ec7, #ffd166, #8aff80, #5ee6ff, #a78bfa, #ff9aa2, #ff6ec7);
-    animation: hueRotate 40s linear infinite;
-  }
-  body::after{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none;mix-blend-mode:soft-light;opacity:.55;
-    background: radial-gradient(1200px 1200px at 20% 20%, rgba(255,255,255,.2), transparent 60%),
-                radial-gradient(1200px 1200px at 80% 80%, rgba(255,255,255,.18), transparent 60%);
-    animation: slowDrift 28s ease-in-out infinite alternate;
-  }
-  @keyframes hueRotate{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
-  @keyframes slowDrift{0%{transform:translate(0,0)}100%{transform:translate(-2%,2%)}}
+  header{text-align:center;padding:20px 0}
+  .title{font-family:Cinzel,serif;font-weight:900;font-size:clamp(22px,4vw,40px)}
+  .subtitle{opacity:.9;margin-top:6px}
+  .hud{display:flex;gap:12px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+  .chip{background:rgba(0,0,0,.4);padding:8px 14px;border-radius:999px;font-weight:800;font-size:16px}
 
-  header{padding:22px 6vw 10px;text-align:center}
-  .title{font-family:Cinzel,serif;font-weight:900;letter-spacing:.5px;font-size:clamp(22px,4vw,40px)}
-  .subtitle{margin-top:6px;opacity:.9}
+  .stage{display:grid;grid-template-columns:1fr 1fr;gap:20px;width:min(1000px,95vw);margin:30px auto;}
+  .col{display:flex;flex-direction:column;gap:12px}
+  .label{text-align:center;font-weight:700;margin-bottom:6px}
+  .card,.drop{font-size:24px;font-weight:800;padding:20px;background:#000;border-radius:var(--radius);color:#fff;text-align:center;cursor:pointer;}
+  .drop{border:2px dashed #fff;min-height:80px;display:flex;align-items:center;justify-content:center;}
+  .drop.hover{box-shadow:0 0 10px #fff;}
+  .locked.correct{background:#16a34a;color:#fff;border:none;}
+  .locked.wrong{background:#dc2626;color:#fff;border:none;}
 
-  .hud{display:flex;gap:12px;justify-content:center;align-items:center;margin:14px 0 8px;flex-wrap:wrap}
-  .chip{background:rgba(0,0,0,.25);backdrop-filter:blur(6px);border:1px solid var(--ring);padding:8px 12px;border-radius:999px;font-weight:700}
-  .bar{position:relative;height:12px;background:rgba(255,255,255,.18);border-radius:999px;overflow:hidden;width:min(760px,90vw);margin:10px auto}
-  .bar>i{position:absolute;inset:0;transform-origin:left;width:0;background:linear-gradient(90deg,var(--good),#34d399,#a7f3d0)}
+  .controls{text-align:center;margin-top:20px}
+  button{background:#000;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:18px;cursor:pointer}
+  .confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
+  footer{text-align:center;position:fixed;bottom:8px;width:100%;color:#fff;font-weight:700}
 
-  .stage{width:min(1100px,94vw);margin:18px auto 70px;display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
-
-  .col{display:grid;gap:12px}
-  .label{font-weight:800;opacity:.9;text-align:center}
-
-  .card{position:relative;padding:14px 14px;border-radius:var(--radius);border:1px solid var(--ring);
-        background:rgba(0,0,0,.28);backdrop-filter:blur(6px);box-shadow:0 10px 26px rgba(0,0,0,.28);
-        font-weight:800; text-align:center; cursor:grab; touch-action:none; user-select:none;
-        transition:transform .12s ease, filter .2s ease}
-  .card:active{cursor:grabbing}
-  .en{color:var(--en)}
-  .jp{color:var(--jp);font-size:22px}
-  .hira{font-size:13px;opacity:.9;margin-top:4px}
-
-  .drop{position:relative;padding:16px;border-radius:var(--radius);border:1px dashed rgba(255,255,255,.35);
-        background:rgba(255,255,255,.06);min-height:58px;display:flex;align-items:center;justify-content:center;
-        transition:box-shadow .15s ease, transform .15s ease}
-  .drop.hover{box-shadow:0 0 0 3px rgba(96,165,250,.5) inset, 0 0 18px rgba(96,165,250,.35); transform:scale(1.02)}
-  .drop.locked{border-style:solid;background:rgba(16,185,129,.18);border-color:rgba(16,185,129,.55)}
-  .pair{display:flex;flex-direction:column;gap:4px;align-items:center}
-  .pair .en{font-size:18px}
-
-  .controls{display:flex;gap:12px;justify-content:center;margin:16px auto}
-  button{appearance:none;border:1px solid var(--ring);background:rgba(0,0,0,.25);color:#fff;padding:10px 14px;border-radius:999px;font-weight:800;letter-spacing:.3px;cursor:pointer;transition:filter .2s ease,transform .04s ease;box-shadow:0 8px 22px rgba(0,0,0,.2),inset 0 0 20px rgba(255,255,255,.04)}
-  button:hover{filter:brightness(1.1)}
-  button:active{transform:translateY(1px)}
-
-  /* Drag clone */
-  .dragging{position:fixed;z-index:30;left:0;top:0;pointer-events:none;transform:translate(-50%,-50%) scale(1.04);filter:drop-shadow(0 18px 28px rgba(0,0,0,.35))}
-
-  /* Confetti */
-  .confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
-  .confetti i{position:absolute;width:8px;height:14px;background:#fff;opacity:.9;will-change:transform}
-
-  /* Toast & overlay */
-  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:rgba(0,0,0,.6);backdrop-filter:blur(6px);color:#e2e8f0;border:1px solid var(--ring);padding:10px 14px;border-radius:999px;font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;pointer-events:none}
-  .toast.show{animation:toast 1.3s ease}
-  @keyframes toast{0%{opacity:0;transform:translate(-50%,6px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-6px)}}
-
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:50}
-  .overlay.show{display:flex;animation:fade .4s ease}
-  @keyframes fade{from{opacity:0}to{opacity:1}}
-  .panel{width:min(720px,92vw);background:rgba(0,0,0,.35);border:1px solid var(--ring);border-radius:24px;padding:22px 20px;box-shadow:0 20px 60px rgba(0,0,0,.4);text-align:center}
-  .big{font-size:clamp(20px,3.6vw,36px);font-weight:900;margin:8px 0 6px}
-  .small{opacity:.9}
-
-  .fade{animation:pagefade .45s ease}
-  @keyframes pagefade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  /* Final glow animation */
+  .glow{animation:glowPulse 2s ease-in-out infinite alternate}
+  @keyframes glowPulse{0%{filter:brightness(1)}100%{filter:brightness(1.4)}}
 </style>
 </head>
 <body>
-  <header>
-    <div class="title">The Boo-riculum Games & Quizzes</div>
-    <div class="subtitle">January Week 1 · Drag & Drop Matching（EN → JP）</div>
-    <div class="hud">
-      <div class="chip" id="page">Page: 1 / 3</div>
-      <div class="chip" id="score">Score: 0 / 15</div>
-      <div class="chip" id="timer">Time: 0:00</div>
-      <div class="chip" id="sound">Sound: On</div>
-    </div>
-    <div class="bar"><i id="progress"></i></div>
-  </header>
-
-  <main class="stage fade" id="stage" aria-live="polite">
-    <!-- Filled by JS -->
-  </main>
-
-  <div class="controls">
-    <button id="restart">Restart</button>
+<header>
+  <div class="title">The Boo-riculum Games & Quizzes</div>
+  <div class="subtitle">January Week 1 · Drag & Drop Matching</div>
+  <div class="hud">
+    <div class="chip" id="page">Page: 1 / 3</div>
+    <div class="chip" id="score">Score: 0 / 15</div>
+    <div class="chip" id="timer">Time: 0:00</div>
   </div>
-
-  <div class="confetti" id="confetti"></div>
-  <div class="toast" id="toast">Nice!</div>
-
-  <div class="overlay" id="overlay">
-    <div class="panel">
-      <div class="big" id="finalJP">おつかれさま！</div>
-      <div class="small" id="finalEN">Great work!</div>
-      <div style="margin-top:14px"><button id="again">もう一度</button></div>
-    </div>
-  </div>
-
+</header>
+<main class="stage" id="stage"></main>
+<div class="controls">
+  <button id="check">Check</button>
+</div>
+<div class="confetti" id="confetti"></div>
+<footer>Bryan's English School</footer>
 <script>
-// -------------------- Data (January Week 1) --------------------
-const LIST = [
-  { id:"goal", en:"goal", jp:"目標", hira:"もくひょう" },
-  { id:"plan", en:"plan", jp:"計画", hira:"けいかく" },
-  { id:"future", en:"future", jp:"未来", hira:"みらい" },
-  { id:"dream", en:"dream", jp:"夢", hira:"ゆめ" },
-  { id:"challenge", en:"challenge", jp:"挑戦", hira:"ちょうせん" },
-  { id:"try", en:"try", jp:"挑戦する", hira:"ちょうせん する" },
-  { id:"change", en:"change", jp:"変える", hira:"かえる" },
-  { id:"habit", en:"habit", jp:"習慣", hira:"しゅうかん" },
-  { id:"exercise", en:"exercise", jp:"運動", hira:"うんどう" },
-  { id:"study", en:"study", jp:"勉強", hira:"べんきょう" },
-  { id:"learn", en:"learn", jp:"学ぶ", hira:"まなぶ" },
-  { id:"practice", en:"practice", jp:"練習", hira:"れんしゅう" },
-  { id:"success", en:"success", jp:"成功", hira:"せいこう" },
-  { id:"focus", en:"focus", jp:"集中", hira:"しゅうちゅう" },
-  { id:"motivation", en:"motivation", jp:"やる気", hira:"やるき" }
-];
-
-// Fixed page groupings for clarity
-const PAGES = [
-  ["goal","plan","future","dream","challenge"],
-  ["try","change","habit","exercise","study"],
-  ["learn","practice","success","focus","motivation"],
-];
-
-// -------------------- Helpers --------------------
-const $ = s => document.querySelector(s);
-const stage = $('#stage');
-const pageEl = $('#page');
-const scoreEl = $('#score');
-const timerEl = $('#timer');
-const progressEl = $('#progress');
-const toast = $('#toast');
-const confettiLayer = $('#confetti');
-const overlay = $('#overlay');
-const finalJP = $('#finalJP');
-const finalEN = $('#finalEN');
-
-let page=0, score=0, matched=0, soundOn=true, timer=0, timerId=null;
-function pad(n){return String(n).padStart(2,'0')}
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-
-// -------------------- Sounds (WebAudio beeps) --------------------
-let actx=null; function ctx(){return actx||(actx=new (window.AudioContext||window.webkitAudioContext)())}
-function beep(type='ok', dur=.08){ if(!soundOn) return; const c=ctx(); const o=c.createOscillator(); const g=c.createGain(); const now=c.currentTime; o.type='sine';
-  if(type==='ok'){ o.frequency.setValueAtTime(900,now); o.frequency.exponentialRampToValueAtTime(1400, now+dur) }
-  if(type==='no'){ o.frequency.setValueAtTime(240,now); o.frequency.exponentialRampToValueAtTime(160, now+dur) }
-  if(type==='next'){ o.frequency.setValueAtTime(660,now); o.frequency.exponentialRampToValueAtTime(990, now+dur*1.2) }
-  g.gain.setValueAtTime(.0001,now); g.gain.exponentialRampToValueAtTime(.22, now+0.01); g.gain.exponentialRampToValueAtTime(.0001, now+dur);
-  o.connect(g).connect(c.destination); o.start(); o.stop(now+dur)
-}
-
-// -------------------- Confetti --------------------
-function burstConfetti(x=innerWidth/2,y=innerHeight/2,count=50){
-  const frag=document.createDocumentFragment();
-  for(let i=0;i<count;i++){
-    const p=document.createElement('i');
-    const size=6+Math.random()*6; p.style.width=size+'px'; p.style.height=(size*1.4)+'px';
-    const left=x+(Math.random()*160-80); const top=y+(Math.random()*40-20);
-    p.style.left=left+'px'; p.style.top=top+'px';
-    const rotate=Math.random()*360; const dr = (Math.random()>.5?1:-1)*(2+Math.random()*4);
-    const hue=[280,190,160,40][Math.floor(Math.random()*4)];
-    p.style.background=`hsl(${hue} 90% 60%)`;
-    p.animate([
-      { transform:`translateY(0) rotate(${rotate}deg)`, opacity:1 },
-      { transform:`translateY(${160+Math.random()*220}px) rotate(${rotate+dr*50}deg)`, opacity:0.8 }
-    ], { duration:750+Math.random()*450, easing:'cubic-bezier(.2,.6,.2,1)', fill:'forwards' });
-    frag.appendChild(p);
-  }
-  confettiLayer.appendChild(frag);
-  setTimeout(()=>{confettiLayer.innerHTML=''},1400);
-}
-
-function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),1200) }
-
-// -------------------- Render Page --------------------
+const DATA=[
+{id:'goal',en:'goal',jp:'目標'},{id:'plan',en:'plan',jp:'計画'},{id:'future',en:'future',jp:'未来'},{id:'dream',en:'dream',jp:'夢'},{id:'challenge',en:'challenge',jp:'挑戦'},
+{id:'try',en:'try',jp:'挑戦する'},{id:'change',en:'change',jp:'変える'},{id:'habit',en:'habit',jp:'習慣'},{id:'exercise',en:'exercise',jp:'運動'},{id:'study',en:'study',jp:'勉強'},
+{id:'learn',en:'learn',jp:'学ぶ'},{id:'practice',en:'practice',jp:'練習'},{id:'success',en:'success',jp:'成功'},{id:'focus',en:'focus',jp:'集中'},{id:'motivation',en:'motivation',jp:'やる気'}];
+const GROUPS=[[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14]];
+let current=0,score=0,timer=0;
+const stage=document.getElementById('stage');
+const pageEl=document.getElementById('page');
+const scoreEl=document.getElementById('score');
+const timerEl=document.getElementById('timer');
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function pad(n){return String(n).padStart(2,'0');}
+function startTimer(){setInterval(()=>{timer++;const m=Math.floor(timer/60),s=timer%60;timerEl.textContent=`Time: ${m}:${pad(s)}`;},1000);}
 function renderPage(){
-  const ids = PAGES[page].slice();
-  const data = ids.map(id=>LIST.find(x=>x.id===id));
-  const left = shuffle(data.map(d=>({id:d.id, en:d.en}))); // EN cards order
-  const right = shuffle(data.map(d=>({id:d.id, jp:d.jp, hira:d.hira}))); // JP targets order
-
-  stage.classList.remove('fade'); void stage.offsetWidth; stage.classList.add('fade');
-  stage.innerHTML = `
-    <div class="col" id="leftCol">
-      <div class="label">English</div>
-      ${left.map(item=>`<div class="card en" data-id="${item.id}" role="button" aria-grabbed="false">${item.en}</div>`).join('')}
-    </div>
-    <div class="col" id="rightCol">
-      <div class="label">日本語</div>
-      ${right.map(item=>`<div class="drop" data-id="${item.id}"><div class="pair"><div class="jp">${item.jp}</div><div class="hira">(${item.hira})</div></div></div>`).join('')}
-    </div>
-  `;
-
-  matched = 0;
-  pageEl.textContent = `Page: ${page+1} / 3`;
-  attachDragHandlers();
+ stage.innerHTML='';
+ let group=GROUPS[current].map(i=>DATA[i]);
+ let left=shuffle([...group]);
+ let right=shuffle([...group]);
+ let html=`<div class='col'><div class='label'>English</div>${left.map(c=>`<div class='card' draggable='true' data-id='${c.id}'>${c.en}</div>`).join('')}</div>`;
+ html+=`<div class='col'><div class='label'>日本語</div>${right.map(c=>`<div class='drop' data-id='${c.id}'>${c.jp}</div>`).join('')}</div>`;
+ stage.innerHTML=html;
+ document.querySelectorAll('.card').forEach(c=>{c.addEventListener('dragstart',dragStart);c.addEventListener('dragend',dragEnd);});
+ document.querySelectorAll('.drop').forEach(d=>{d.addEventListener('dragover',dragOver);d.addEventListener('dragleave',dragLeave);d.addEventListener('drop',drop);});
+ pageEl.textContent=`Page: ${current+1} / 3`;scoreEl.textContent=`Score: ${score} / 15`;
 }
-
-// -------------------- Drag & Drop (pointer-friendly) --------------------
-let dragEl=null, dragClone=null, offsetX=0, offsetY=0;
-function onPointerDown(e){
-  const el = e.currentTarget; dragEl = el; el.setPointerCapture(e.pointerId);
-  const r = el.getBoundingClientRect(); offsetX = e.clientX - (r.left + r.width/2); offsetY = e.clientY - (r.top + r.height/2);
-  dragClone = el.cloneNode(true); dragClone.classList.add('dragging'); document.body.appendChild(dragClone);
-  moveClone(e.clientX, e.clientY);
-}
-function onPointerMove(e){ if(!dragClone) return; moveClone(e.clientX, e.clientY); hoverDrop(e.clientX, e.clientY, true); }
-function onPointerUp(e){ if(!dragClone) return; const t = getDropAt(e.clientX, e.clientY); hoverDrop(e.clientX, e.clientY, false);
-  const id = dragEl.dataset.id;
-  if(t && t.dataset.id === id && !t.classList.contains('locked')){
-    // success
-    t.classList.add('locked'); t.innerHTML = `<div class="pair"><div class="jp">${t.querySelector('.jp').textContent}</div><div class="hira">${t.querySelector('.hira').textContent}</div><div class="en">${dragEl.textContent}</div></div>`;
-    dragEl.style.visibility='hidden';
-    score++; matched++;
-    updateHUD();
-    beep('ok', .12);
-    burstConfetti(e.clientX, e.clientY, 34);
-    if(matched===5){
-      // advance automatically
-      setTimeout(()=>{ nextPage(); }, 700);
-      beep('next', .1);
-    }
-  }else{
-    // fail
-    dragEl.animate([{transform:'translateY(0)'},{transform:'translateY(2px)'}],{duration:120});
-    beep('no', .1);
-  }
-  dragClone.remove(); dragClone=null; dragEl.releasePointerCapture(e.pointerId); dragEl=null;
-}
-function moveClone(x,y){ dragClone.style.left = x+'px'; dragClone.style.top = y+'px'; }
-function getDropAt(x,y){ const el = document.elementFromPoint(x,y); return el?.closest?.('.drop') || null }
-function hoverDrop(x,y,add){ const t = getDropAt(x,y); document.querySelectorAll('.drop.hover').forEach(d=>d.classList.remove('hover')); if(add && t && !t.classList.contains('locked')) t.classList.add('hover') }
-
-function attachDragHandlers(){
-  document.querySelectorAll('.card.en').forEach(el=>{
-    el.addEventListener('pointerdown', onPointerDown);
-    el.addEventListener('pointermove', onPointerMove);
-    el.addEventListener('pointerup', onPointerUp);
-    el.addEventListener('pointercancel', onPointerUp);
-  });
-}
-
-// -------------------- Flow --------------------
-function updateHUD(){
-  scoreEl.textContent = `Score: ${score} / 15`;
-  progressEl.style.transform = `scaleX(${score/15})`;
-}
-
-function nextPage(){
-  if(page < 2){ page++; renderPage(); }
-  else{ finish(); }
-}
-
-function finish(){
-  clearInterval(timerId);
-  let jpMsg=""; let enMsg="";
-  if(score<=5){ jpMsg = "あれ？ブーリキュラムを見なかったの？"; enMsg = "Oh no! You didn’t look at the Boo-riculum!" }
-  else if(score<=10){ jpMsg = "YouTubeばかり見ないで英語を練習しよう！"; enMsg = "Stop watching YouTube and start practicing English!" }
-  else if(score<=14){ jpMsg = "いいね！あと少しでパーフェクト！"; enMsg = "Hey, good job! Try for perfect!" }
-  else { jpMsg = "すごい！Week 1 マスター！"; enMsg = "You are a Week 1 master!!!" }
-  finalJP.textContent = jpMsg; finalEN.textContent = enMsg;
-  overlay.classList.add('show');
-  burstConfetti(innerWidth/2, innerHeight/2, 180);
-}
-
-function restart(){
-  page=0; score=0; matched=0; updateHUD(); renderPage();
-  clearInterval(timerId); timer=0; timerEl.textContent='Time: 0:00';
-  timerId=setInterval(()=>{ timer++; const m=Math.floor(timer/60), s=timer%60; timerEl.textContent = `Time: ${m}:${String(s).padStart(2,'0')}`; },1000);
-  overlay.classList.remove('show');
-}
-
-$('#restart').addEventListener('click', ()=>{ restart(); showToast('Restarted!') });
-$('#again').addEventListener('click', ()=> restart());
-$('#sound').addEventListener('click', (e)=>{ soundOn=!soundOn; e.target.textContent = `Sound: ${soundOn? 'On':'Off'}`; showToast(soundOn? 'Sound on':'Sound off') });
-
-// Start
-restart();
+function dragStart(e){e.dataTransfer.setData('text',e.target.dataset.id);e.target.style.opacity='0.5';}
+function dragEnd(e){e.target.style.opacity='1';}
+function dragOver(e){e.preventDefault();e.currentTarget.classList.add('hover');}
+function dragLeave(e){e.currentTarget.classList.remove('hover');}
+function drop(e){e.preventDefault();e.currentTarget.classList.remove('hover');const id=e.dataTransfer.getData('text');e.currentTarget.dataset.match=id;}
+function fart(){const ctx=new (window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator();const g=ctx.createGain();o.connect(g).connect(ctx.destination);o.type='sawtooth';o.frequency.setValueAtTime(120,ctx.currentTime);g.gain.setValueAtTime(0.2,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(60,ctx.currentTime+0.3);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);o.start();o.stop(ctx.currentTime+0.3);}
+function confetti(){const c=document.getElementById('confetti');const i=document.createElement('div');i.style.position='absolute';i.style.inset='0';i.innerHTML='<div style="width:100%;height:100%;background:radial-gradient(circle,rgba(255,255,255,.6)0%,transparent 70%);"></div>';c.appendChild(i);setTimeout(()=>c.innerHTML='',1000);}
+document.getElementById('check').addEventListener('click',()=>{
+ let drops=[...document.querySelectorAll('.drop')];let correct=0;
+ drops.forEach(d=>{if(d.dataset.match){if(d.dataset.match===d.dataset.id){d.classList.add('locked','correct');correct++;confetti();}else{d.classList.add('locked','wrong');fart();}}});
+ score+=correct;
+ setTimeout(()=>{current++;if(current<3){renderPage();}else{finish();}},1500);
+});
+function finish(){let msgJP,msgEN,bg;if(score<=5){msgJP='あれ？ブーリキュラムを見なかったの？';msgEN='Oh no! You didn’t look at the Boo-riculum!';bg='red';}else if(score<=10){msgJP='YouTubeばかり見ないで英語を練習しよう！';msgEN='Stop watching YouTube and start practicing English!';bg='orange';}else if(score<=14){msgJP='いいね！あと少しでパーフェクト！';msgEN='Hey, good job! Try for perfect!';bg='green';}else{msgJP='すごい！Week 1 マスター！';msgEN='You are a Week 1 master!!!';bg='gold';confetti();}
+ document.body.style.background=bg;document.body.classList.add('glow');stage.innerHTML=`<div style='text-align:center;font-size:30px;font-weight:900;padding:60px;'>${msgJP}<br><br>${msgEN}<br><br><button onclick="location.reload()">Restart</button></div>`;}
+renderPage();startTimer();
 </script>
 </body>
 </html>
