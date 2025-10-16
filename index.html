@@ -10,13 +10,13 @@
 :root{
   --dark:#0b1530;
   --ink:#ffffff;
-  --green:#38d96f;
+  --green:#22c55e;
   --red:#e53935;
   --outline:#ffffffcc;
   --check:#22c55e;
   --checkGlow:0 0 12px rgba(34,197,94,.9), 0 0 28px rgba(34,197,94,.5);
   --gold:#ffd166;
-  --cuteBlue:#60a5fa;             /* cute blue */
+  --cuteBlue:#60a5fa;
   --cuteBlueGlow:0 0 14px rgba(96,165,250,.9), 0 0 36px rgba(96,165,250,.55);
 }
 
@@ -33,9 +33,20 @@ body{
 
 /* Header + footer */
 header{padding:20px 16px 10px;text-align:center}
-header h1{font-family:'Cinzel',serif;letter-spacing:.5px;font-size:clamp(1.2rem,2.8vw,1.6rem);opacity:.9}
-header h2{font-family:'Cinzel',serif;letter-spacing:1px;margin-top:4px;font-size:clamp(1.6rem,4.2vw,2.2rem);text-shadow:0 0 10px rgba(255,255,255,.12)}
-footer{margin-top:auto;padding:14px 10px;opacity:.8;font-size:.95rem}
+header h1{
+  font-family:'Cinzel',serif;letter-spacing:.5px;
+  font-size:clamp(1.8rem,5.2vw,2.6rem); /* bigger */
+  opacity:.95
+}
+header h2{
+  font-family:'Cinzel',serif;letter-spacing:1px;margin-top:6px;
+  font-size:clamp(2.0rem,6.2vw,3rem);  /* bigger */
+  text-shadow:0 0 10px rgba(255,255,255,.12)
+}
+footer{
+  margin-top:auto;padding:14px 10px;opacity:.9;font-size:1rem;
+  font-family:'Cinzel',serif; /* same font as header */
+}
 
 /* Pages */
 .page{width:100%;max-width:980px;margin:0 auto;display:none;padding:8px 16px 24px}
@@ -48,14 +59,18 @@ footer{margin-top:auto;padding:14px 10px;opacity:.8;font-size:.95rem}
 /* Unified CARD sizing */
 .card{
   border-radius:24px; 
-  height:140px;                /* fixed size for uniformity */
+  height:140px; 
   padding:18px 20px;
   display:flex; align-items:center; justify-content:center; text-align:center;
   font-size:clamp(1.4rem,4.6vw,2.4rem); font-weight:700; line-height:1.2;
   user-select:none; transition:transform .15s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease, color .2s ease;
   word-break:break-word;
 }
-.card.en{ color:#0b1530; }
+.card.en{
+  color:#000;                 /* bold black text */
+  font-weight:900;
+  text-transform:none;        /* keep lowercase exactly */
+}
 .card.jp{
   background:transparent; border:3px dashed var(--outline); color:var(--ink);
   white-space:pre-line;
@@ -64,19 +79,17 @@ footer{margin-top:auto;padding:14px 10px;opacity:.8;font-size:.95rem}
 .card.locked{opacity:.6; pointer-events:none}
 
 /* After drop — matched visual */
-.card.combined{
-  border:0; display:flex; flex-direction:column; gap:8px;
-}
+.card.combined{ border:0; display:flex; flex-direction:column; gap:8px; }
 .card.matchedBlue{
   background:var(--cuteBlue)!important; 
   color:#fff!important; 
   box-shadow:var(--cuteBlueGlow)!important;
 }
-.card.combined .enTxt{font-size:1em; font-weight:800}
-.card.combined .jpTxt{font-size:.66em; opacity:.95}
+.card.combined .enTxt{font-size:1em; font-weight:900}
+.card.combined .jpTxt{font-size:.66em; opacity:.98}
 
-/* Check states (keep for grading glow) */
-.correct{background:var(--green)!important; color:#03210f!important; border:0!important}
+/* Grading states */
+.correct{background:var(--green)!important; color:#062a12!important; border:0!important}
 .wrong{background:var(--red)!important; color:#fff!important; border:0!important; animation:shake .45s}
 @keyframes shake{
   0%,100%{transform:translateX(0)}
@@ -100,8 +113,8 @@ footer{margin-top:auto;padding:14px 10px;opacity:.8;font-size:.95rem}
 #page-results .result-box{
   min-height:62vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
 }
-.result-msg{font-family:'Noto Sans JP',sans-serif;font-size:clamp(2.2rem,6vw,3rem);margin-bottom:16px}
-.result-score{font-size:clamp(1.6rem,5vw,2.2rem);opacity:.95}
+.result-msg{font-family:'Noto Sans JP',sans-serif;font-size:clamp(2.4rem,6.4vw,3.2rem);margin-bottom:18px}
+.result-score{font-size:clamp(1.8rem,5.4vw,2.4rem);opacity:.95}
 
 /* Glow backgrounds */
 .redGlow{background:#900; box-shadow:inset 0 0 60px 30px #ff2b2b}
@@ -121,58 +134,46 @@ footer{margin-top:auto;padding:14px 10px;opacity:.8;font-size:.95rem}
   100%{transform:translateY(110vh) rotate(720deg)}
 }
 
-/* Bigger mini confetti (per-card) */
+/* Bigger mini confetti (per-card) — slightly bigger than before */
 .bit{
-  position:fixed; width:12px; height:12px; border-radius:3px;
-  pointer-events:none; z-index:20; animation:pop 700ms ease-out forwards;
+  position:fixed; width:14px; height:14px; border-radius:3px;
+  pointer-events:none; z-index:20; animation:pop 760ms ease-out forwards;
 }
 @keyframes pop{
   0%{opacity:1; transform:translate(0,0) scale(1) rotate(0deg)}
   100%{opacity:0; transform:translate(var(--dx),var(--dy)) scale(0.9) rotate(540deg)}
 }
 
-/* Bigger green fart cloud */
+/* Even bigger green fart cloud */
 .poof{
-  position:fixed; width:28px; height:28px; border-radius:50%;
-  background:radial-gradient(closest-side, rgba(74,222,128,.95) 0%, rgba(34,197,94,.6) 55%, rgba(34,197,94,0) 70%);
+  position:fixed; width:40px; height:40px; border-radius:50%;
+  background:radial-gradient(closest-side, rgba(74,222,128,.97) 0%, rgba(34,197,94,.7) 55%, rgba(34,197,94,0) 70%);
   filter:blur(2px);
   pointer-events:none; z-index:19;
-  animation:puff 850ms ease-out forwards;
+  animation:puff 950ms ease-out forwards;
 }
 @keyframes puff{
-  0%{opacity:.95; transform:translate(-50%,-50%) scale(.7)}
-  100%{opacity:0; transform:translate(-50%,-50%) scale(5.5)}
+  0%{opacity:.98; transform:translate(-50%,-50%) scale(.7)}
+  100%{opacity:0; transform:translate(-50%,-50%) scale(7)}
 }
 
-/* Vertical moving stripes (base anim) */
+/* Vertical moving stripes for EN cards (fully opaque palettes) */
 @keyframes stripesV{from{background-position:0 0}to{background-position:0 140px}}
-/* Five color palettes for EN cards (vertical) */
-.sv{ background-size:100% 140px, 100% 140px; animation:stripesV 3.6s linear infinite; }
-.sv::before{content:''} /* just to keep class */
+.sv{ background-size:100% 140px; animation:stripesV 3.2s linear infinite; }
 .sv1{
-  background-image:
-    repeating-linear-gradient(0deg, rgba(255,255,255,.18) 0 18px, rgba(255,255,255,.06) 18px 36px),
-    repeating-linear-gradient(0deg, #ff7eb980 0 14px, #5ee6ff80 14px 28px, #ffd16680 28px 42px);
+  background-image:repeating-linear-gradient(0deg, #ff7eb9 0 18px, #5ee6ff 18px 36px, #ffd166 36px 54px);
 }
 .sv2{
-  background-image:
-    repeating-linear-gradient(0deg, rgba(255,255,255,.18) 0 18px, rgba(255,255,255,.06) 18px 36px),
-    repeating-linear-gradient(0deg, #a78bfa80 0 14px, #60a5fa80 14px 28px, #f472b680 28px 42px);
+  background-image:repeating-linear-gradient(0deg, #a78bfa 0 18px, #60a5fa 18px 36px, #f472b6 36px 54px);
 }
 .sv3{
-  background-image:
-    repeating-linear-gradient(0deg, rgba(255,255,255,.18) 0 18px, rgba(255,255,255,.06) 18px 36px),
-    repeating-linear-gradient(0deg, #34d39980 0 14px, #fbbf2480 14px 28px, #60a5fa80 28px 42px);
+  background-image:repeating-linear-gradient(0deg, #34d399 0 18px, #fbbf24 18px 36px, #60a5fa 36px 54px);
 }
 .sv4{
-  background-image:
-    repeating-linear-gradient(0deg, rgba(255,255,255,.18) 0 18px, rgba(255,255,255,.06) 18px 36px),
-    repeating-linear-gradient(0deg, #fca5a580 0 14px, #86efac80 14px 28px, #93c5fd80 28px 42px);
+  background-image:repeating-linear-gradient(0deg, #fca5a5 0 18px, #86efac 18px 36px, #93c5fd 36px 54px);
 }
 .sv5{
-  background-image:
-    repeating-linear-gradient(0deg, rgba(255,255,255,.18) 0 18px, rgba(255,255,255,.06) 18px 36px),
-    repeating-linear-gradient(0deg, #f9a8d480 0 14px, #fef08a80 14px 28px, #6ee7b780 28px 42px);
+  background-image:repeating-linear-gradient(0deg, #f9a8d4 0 18px, #fef08a 18px 36px, #6ee7b7 36px 54px);
 }
 
 /* Layout helpers */
@@ -277,8 +278,8 @@ function centerOf(el){
   return { x: r.left + r.width/2, y: r.top + r.height/2 };
 }
 
-/* Bigger confetti burst around a card (per correct) */
-function burstConfettiAt(el, count=34){
+/* Slightly bigger confetti burst around a card (per correct) */
+function burstConfettiAt(el, count=44){
   const {x,y} = centerOf(el);
   for(let i=0;i<count;i++){
     const bit = document.createElement('div');
@@ -286,18 +287,18 @@ function burstConfettiAt(el, count=34){
     bit.style.left = x + 'px';
     bit.style.top  = y + 'px';
     const angle = Math.random()*2*Math.PI;
-    const dist = 70 + Math.random()*120;     // bigger spread
+    const dist = 80 + Math.random()*130;   // larger spread
     const dx = Math.cos(angle)*dist;
     const dy = Math.sin(angle)*dist - 10;
     bit.style.setProperty('--dx', dx+'px');
     bit.style.setProperty('--dy', dy+'px');
     bit.style.background = `hsl(${Math.random()*360},100%,60%)`;
     document.body.appendChild(bit);
-    setTimeout(()=>bit.remove(), 800);
+    setTimeout(()=>bit.remove(), 820);
   }
 }
 
-/* Bigger green fart cloud on wrong */
+/* Even bigger green fart cloud on wrong */
 function fartPoofAt(el){
   const {x,y} = centerOf(el);
   const p = document.createElement('div');
@@ -305,7 +306,7 @@ function fartPoofAt(el){
   p.style.left = x + 'px';
   p.style.top  = y + 'px';
   document.body.appendChild(p);
-  setTimeout(()=>p.remove(), 900);
+  setTimeout(()=>p.remove(), 980);
 }
 
 /* Mobile audio unlock (once) */
@@ -348,17 +349,17 @@ function loadRound(){
   colEn.innerHTML = "";
   colJp.innerHTML = "";
 
-  // EN vertical stripes — 5 shuffled palettes per round
+  // EN vertical stripes — 5 shuffled palettes per round (100% opaque)
   const stripeClasses = shuffle(['sv1','sv2','sv3','sv4','sv5']);
 
   shuffle([...set]).forEach((item, idx)=>{
     const c = document.createElement('div');
     c.className = `card en sv ${stripeClasses[idx % stripeClasses.length]}`;
     c.draggable = true;
-    c.textContent = item.en;
-    c.dataset.en = item.en;
+    c.textContent = item.en.toLowerCase();   // lowercase English
+    c.dataset.en = item.en.toLowerCase();
     c.addEventListener('dragstart', e=>{
-      e.dataTransfer.setData('text/en', item.en);
+      e.dataTransfer.setData('text/en', c.dataset.en);
       c.classList.add('dragging');
     });
     c.addEventListener('dragend', ()=>c.classList.remove('dragging'));
@@ -433,19 +434,19 @@ $("#checkBtn").addEventListener('click', ()=>{
     const card = jpOrder[i];
     const jp = card.dataset.jp;
     const chosenEn = card.dataset.connected || "";
-    const correctEn = rounds.flat().find(v=>v.jp===jp)?.en;
+    const correctEn = rounds.flat().find(v=>v.jp===jp)?.en.toLowerCase();
 
     if(chosenEn && chosenEn === correctEn){
       card.classList.remove('wrong');
-      card.classList.add('correct','locked');
+      card.classList.add('correct','locked');       // turns green
       playSfx('s_ding');
-      burstConfettiAt(card, 36);     // bigger blast
+      burstConfettiAt(card, 44);                    // slightly bigger confetti
       totalScore++;
     } else {
       card.classList.remove('correct');
-      card.classList.add('wrong');
+      card.classList.add('wrong');                  // turns red
       playSfx('s_fart');
-      fartPoofAt(card);              // bigger fart cloud
+      fartPoofAt(card);                             // even bigger fart cloud
     }
     i++;
   }, 850);
