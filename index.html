@@ -31,6 +31,8 @@ body{
   color:var(--ink);
   font-family:'Noto Sans JP',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
   display:flex;flex-direction:column;align-items:center;
+  /* Reduce accidental page pull-to-refresh on capable browsers */
+  overscroll-behavior-y: none;
 }
 
 /* Header + footer */
@@ -84,8 +86,9 @@ body.draggingTouch .round-wrap{ touch-action: none; }
     flex:1 1 auto;
     min-height:0;
     overflow-y:auto;
-    -webkit-overflow-scrolling:touch;
-    overscroll-behavior-y:contain;
+    -webkit-overflow-scrolling:touch;      /* smooth iOS scroll */
+    overscroll-behavior-y:contain;         /* reduce bounce where supported */
+    scrollbar-gutter: stable both-edges;   /* keeps scroll easier to grab */
     padding-bottom: calc(var(--actionsH) + env(safe-area-inset-bottom) + 14px); /* keep bottom cards clear of CHECK */
   }
   .round-wrap{flex-wrap:nowrap;gap:10px}
@@ -154,6 +157,7 @@ body.draggingTouch .round-wrap{ touch-action: none; }
 .btn{
   border:0; border-radius:28px; padding:12px 34px; font-weight:800; font-size:1.1rem; cursor:pointer;
   transition:transform .08s ease, box-shadow .2s ease, filter .2s ease;
+  touch-action: manipulation; /* faster taps on mobile */
 }
 .btn:active{transform:translateY(1px)}
 .btn-green{ background:var(--check); color:#062a12; box-shadow:var(--checkGlow) }
@@ -340,6 +344,36 @@ function unlockAudioOnce(){
   audioUnlocked=true;
 }
 window.addEventListener('pointerdown', unlockAudioOnce, {once:true});
+
+/* iOS pull-to-refresh guard just on the scroll container */
+function installPullToRefreshGuard(){
+  const scroller = document.querySelector('.round-viewport');
+  if(!scroller) return;
+
+  let startY=0, startTop=0;
+
+  // Record where the gesture starts
+  scroller.addEventListener('touchstart', (e)=>{
+    if(e.touches.length!==1) return;
+    startY = e.touches[0].clientY;
+    startTop = scroller.scrollTop;
+  }, {passive:true});
+
+  // If at top and pulling down (or at bottom and pushing up), prevent default to avoid bounce/refresh.
+  scroller.addEventListener('touchmove', (e)=>{
+    if(e.touches.length!==1) return;
+    const y  = e.touches[0].clientY;
+    const dy = y - startY;
+
+    const atTop    = scroller.scrollTop <= 0;
+    const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 1;
+
+    if ((atTop && dy > 0) || (atBottom && dy < 0)) {
+      // Block the browser rubber-band / pull-to-refresh, but ONLY at the edges
+      e.preventDefault();
+    }
+  }, {passive:false});
+}
 
 /* Init */
 function initGame(){
@@ -586,6 +620,7 @@ function showResults(){
 $("#playAgain").addEventListener('click', initGame);
 
 /* Start */
+installPullToRefreshGuard();
 initGame();
 </script>
 </body>
