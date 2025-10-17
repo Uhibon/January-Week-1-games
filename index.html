@@ -35,17 +35,17 @@ body{
 header{padding:20px 16px 10px;text-align:center}
 header h1{
   font-family:'Cinzel',serif;letter-spacing:.5px;
-  font-size:clamp(1.8rem,5.2vw,2.6rem); /* bigger */
+  font-size:clamp(1.8rem,5.2vw,2.6rem);
   opacity:.95
 }
 header h2{
   font-family:'Cinzel',serif;letter-spacing:1px;margin-top:6px;
-  font-size:clamp(2.0rem,6.2vw,3rem);  /* bigger */
+  font-size:clamp(2.0rem,6.2vw,3rem);
   text-shadow:0 0 10px rgba(255,255,255,.12)
 }
 footer{
   margin-top:auto;padding:14px 10px;opacity:.9;font-size:1rem;
-  font-family:'Cinzel',serif; /* same font as header */
+  font-family:'Cinzel',serif;
 }
 
 /* Pages */
@@ -68,7 +68,9 @@ footer{
 }
 .card.en{
   color:#000;                 /* bold black text */
-  font-weight:900;
+  font-weight:1000;           /* extra bold */
+  font-size:clamp(1.8rem,5.8vw,3rem);  /* BIGGER */
+  letter-spacing:-.01em;
   text-transform:none;        /* keep lowercase exactly */
 }
 .card.jp{
@@ -85,10 +87,10 @@ footer{
   color:#fff!important; 
   box-shadow:var(--cuteBlueGlow)!important;
 }
-.card.combined .enTxt{font-size:1em; font-weight:900}
-.card.combined .jpTxt{font-size:.66em; opacity:.98}
+.card.combined .enTxt{font-size:1.05em; font-weight:1000; letter-spacing:-.01em}
+.card.combined .jpTxt{font-size:.7em; opacity:.98}
 
-/* Grading states */
+/* Grading states (applied only on CHECK) */
 .correct{background:var(--green)!important; color:#062a12!important; border:0!important}
 .wrong{background:var(--red)!important; color:#fff!important; border:0!important; animation:shake .45s}
 @keyframes shake{
@@ -109,7 +111,7 @@ footer{
 .btn-green{ background:var(--check); color:#062a12; box-shadow:var(--checkGlow) }
 .btn-green:disabled{filter:saturate(.2) brightness(.8); box-shadow:none; cursor:not-allowed}
 
-/* Results — larger & centered */
+/* Results — large & centered (unchanged) */
 #page-results .result-box{
   min-height:62vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
 }
@@ -134,7 +136,7 @@ footer{
   100%{transform:translateY(110vh) rotate(720deg)}
 }
 
-/* Bigger mini confetti (per-card) — slightly bigger than before */
+/* Per-card effects (sizes already tuned to your “perfect”) */
 .bit{
   position:fixed; width:14px; height:14px; border-radius:3px;
   pointer-events:none; z-index:20; animation:pop 760ms ease-out forwards;
@@ -143,8 +145,6 @@ footer{
   0%{opacity:1; transform:translate(0,0) scale(1) rotate(0deg)}
   100%{opacity:0; transform:translate(var(--dx),var(--dy)) scale(0.9) rotate(540deg)}
 }
-
-/* Even bigger green fart cloud */
 .poof{
   position:fixed; width:40px; height:40px; border-radius:50%;
   background:radial-gradient(closest-side, rgba(74,222,128,.97) 0%, rgba(34,197,94,.7) 55%, rgba(34,197,94,0) 70%);
@@ -157,24 +157,14 @@ footer{
   100%{opacity:0; transform:translate(-50%,-50%) scale(7)}
 }
 
-/* Vertical moving stripes for EN cards (fully opaque palettes) */
+/* English vertical stripes (full opacity palettes) */
 @keyframes stripesV{from{background-position:0 0}to{background-position:0 140px}}
 .sv{ background-size:100% 140px; animation:stripesV 3.2s linear infinite; }
-.sv1{
-  background-image:repeating-linear-gradient(0deg, #ff7eb9 0 18px, #5ee6ff 18px 36px, #ffd166 36px 54px);
-}
-.sv2{
-  background-image:repeating-linear-gradient(0deg, #a78bfa 0 18px, #60a5fa 18px 36px, #f472b6 36px 54px);
-}
-.sv3{
-  background-image:repeating-linear-gradient(0deg, #34d399 0 18px, #fbbf24 18px 36px, #60a5fa 36px 54px);
-}
-.sv4{
-  background-image:repeating-linear-gradient(0deg, #fca5a5 0 18px, #86efac 18px 36px, #93c5fd 36px 54px);
-}
-.sv5{
-  background-image:repeating-linear-gradient(0deg, #f9a8d4 0 18px, #fef08a 18px 36px, #6ee7b7 36px 54px);
-}
+.sv1{ background-image:repeating-linear-gradient(0deg, #ff7eb9 0 18px, #5ee6ff 18px 36px, #ffd166 36px 54px); }
+.sv2{ background-image:repeating-linear-gradient(0deg, #a78bfa 0 18px, #60a5fa 18px 36px, #f472b6 36px 54px); }
+.sv3{ background-image:repeating-linear-gradient(0deg, #34d399 0 18px, #fbbf24 18px 36px, #60a5fa 36px 54px); }
+.sv4{ background-image:repeating-linear-gradient(0deg, #fca5a5 0 18px, #86efac 18px 36px, #93c5fd 36px 54px); }
+.sv5{ background-image:repeating-linear-gradient(0deg, #f9a8d4 0 18px, #fef08a 18px 36px, #6ee7b7 36px 54px); }
 
 /* Layout helpers */
 hr.sep{border:0;height:1px;background:linear-gradient(90deg,transparent,#ffffff33,transparent);margin:12px 0 8px}
@@ -214,7 +204,7 @@ hr.sep{border:0;height:1px;background:linear-gradient(90deg,transparent,#ffffff3
 
 <footer>Bryan's English School</footer>
 
-<!-- Audio (place in assets/audio/) -->
+<!-- Audio -->
 <audio id="s_ding" src="assets/audio/ding.mp3" preload="auto"></audio>
 <audio id="s_fart" src="assets/audio/fart.mp3" preload="auto"></audio>
 <audio id="s_r05" src="assets/audio/result_0-5.mp3" preload="auto"></audio>
@@ -223,9 +213,7 @@ hr.sep{border:0;height:1px;background:linear-gradient(90deg,transparent,#ffffff3
 <audio id="s_r15" src="assets/audio/result_15.mp3" preload="auto"></audio>
 
 <script>
-/* --------------------
-   DATA: 15 vocab items
----------------------*/
+/* DATA */
 const MASTER = [
   {en:"goal",jp:"目標",hira:"もくひょう"},
   {en:"plan",jp:"計画",hira:"けいかく"},
@@ -244,246 +232,165 @@ const MASTER = [
   {en:"motivation",jp:"やる気",hira:"やるき"}
 ];
 
-/* --------------------
-   State
----------------------*/
-let rounds = [];      // 3 arrays of 5 items each
-let roundIndex = 0;   // 0..2
-let totalScore = 0;   // 0..15
-let connections = {}; // jp -> en chosen
-let jpOrder = [];     // DOM order for top-to-bottom checking
-let audioUnlocked = false;
+/* State */
+let rounds=[], roundIndex=0, totalScore=0, connections={}, jpOrder=[], audioUnlocked=false;
 
-/* --------------------
-   Utilities
----------------------*/
-const $ = sel => document.querySelector(sel);
-function shuffle(a){ return a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]); }
-
-/* Robust SFX: clone and play so it triggers every time */
+/* Helpers */
+const $ = s=>document.querySelector(s);
+function shuffle(a){return a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);}
 function playSfx(id){
-  const srcEl = document.getElementById(id);
-  if(!srcEl) return;
-  const a = srcEl.cloneNode(true);
-  a.setAttribute('playsinline','');
-  a.currentTime = 0;
-  a.volume = srcEl.volume ?? 1;
-  document.body.appendChild(a);
-  a.play().catch(()=>{}).finally(()=>setTimeout(()=>a.remove(), 1800));
+  const src=document.getElementById(id); if(!src) return;
+  const a=src.cloneNode(true); a.setAttribute('playsinline',''); a.currentTime=0; a.volume=src.volume??1;
+  document.body.appendChild(a); a.play().catch(()=>{}).finally(()=>setTimeout(()=>a.remove(),1800));
 }
+function centerOf(el){const r=el.getBoundingClientRect();return{ x:r.left+r.width/2, y:r.top+r.height/2 };}
 
-/* Position helpers for effects */
-function centerOf(el){
-  const r = el.getBoundingClientRect();
-  return { x: r.left + r.width/2, y: r.top + r.height/2 };
-}
-
-/* Slightly bigger confetti burst around a card (per correct) */
-function burstConfettiAt(el, count=44){
-  const {x,y} = centerOf(el);
+/* Effects */
+function burstConfettiAt(el,count=44){
+  const {x,y}=centerOf(el);
   for(let i=0;i<count;i++){
-    const bit = document.createElement('div');
-    bit.className = 'bit';
-    bit.style.left = x + 'px';
-    bit.style.top  = y + 'px';
-    const angle = Math.random()*2*Math.PI;
-    const dist = 80 + Math.random()*130;   // larger spread
-    const dx = Math.cos(angle)*dist;
-    const dy = Math.sin(angle)*dist - 10;
-    bit.style.setProperty('--dx', dx+'px');
-    bit.style.setProperty('--dy', dy+'px');
-    bit.style.background = `hsl(${Math.random()*360},100%,60%)`;
-    document.body.appendChild(bit);
-    setTimeout(()=>bit.remove(), 820);
+    const b=document.createElement('div'); b.className='bit';
+    b.style.left=x+'px'; b.style.top=y+'px';
+    const ang=Math.random()*2*Math.PI, dist=80+Math.random()*130;
+    b.style.setProperty('--dx', Math.cos(ang)*dist+'px');
+    b.style.setProperty('--dy', Math.sin(ang)*dist-10+'px');
+    b.style.background=`hsl(${Math.random()*360},100%,60%)`;
+    document.body.appendChild(b); setTimeout(()=>b.remove(),820);
   }
 }
-
-/* Even bigger green fart cloud on wrong */
 function fartPoofAt(el){
-  const {x,y} = centerOf(el);
-  const p = document.createElement('div');
-  p.className = 'poof';
-  p.style.left = x + 'px';
-  p.style.top  = y + 'px';
-  document.body.appendChild(p);
-  setTimeout(()=>p.remove(), 980);
+  const {x,y}=centerOf(el);
+  const p=document.createElement('div'); p.className='poof';
+  p.style.left=x+'px'; p.style.top=y+'px';
+  document.body.appendChild(p); setTimeout(()=>p.remove(),980);
 }
 
-/* Mobile audio unlock (once) */
+/* Mobile audio unlock */
 function unlockAudioOnce(){
   if(audioUnlocked) return;
-  const ids = ["s_ding","s_fart","s_r05","s_r610","s_r1114","s_r15"];
-  ids.forEach(id=>{
-    const el = document.getElementById(id);
-    try { el.volume = 1.0; el.currentTime = 0; el.play().then(()=>el.pause()).catch(()=>{}); }
-    catch(e){}
+  ["s_ding","s_fart","s_r05","s_r610","s_r1114","s_r15"].forEach(id=>{
+    const el=document.getElementById(id);
+    try{ el.volume=1.0; el.currentTime=0; el.play().then(()=>el.pause()).catch(()=>{});}catch(e){}
   });
-  audioUnlocked = true;
+  audioUnlocked=true;
 }
 window.addEventListener('pointerdown', unlockAudioOnce, {once:true});
 
-/* --------------------
-   Build rounds (shuffle ONCE per session)
----------------------*/
+/* Init */
 function initGame(){
-  totalScore = 0;
-  roundIndex = 0;
-  document.body.className = '';
-  $("#page-results").classList.remove('active');
-  $("#page-round").classList.add('active');
-
-  const shuffled = shuffle([...MASTER]);
-  rounds = [shuffled.slice(0,5), shuffled.slice(5,10), shuffled.slice(10,15)];
+  totalScore=0; roundIndex=0; document.body.className='';
+  $("#page-results").classList.remove('active'); $("#page-round").classList.add('active');
+  const shuffled=shuffle([...MASTER]);
+  rounds=[shuffled.slice(0,5),shuffled.slice(5,10),shuffled.slice(10,15)];
   loadRound();
 }
 
-/* --------------------
-   Round UI
----------------------*/
+/* Build a round */
 function loadRound(){
-  connections = {};
-  const set = rounds[roundIndex];
+  connections={};
+  const set=rounds[roundIndex], colEn=$("#col-en"), colJp=$("#col-jp");
+  colEn.innerHTML=""; colJp.innerHTML="";
 
-  const colEn = $("#col-en");
-  const colJp = $("#col-jp");
-  colEn.innerHTML = "";
-  colJp.innerHTML = "";
+  const stripeClasses=shuffle(['sv1','sv2','sv3','sv4','sv5']);
 
-  // EN vertical stripes — 5 shuffled palettes per round (100% opaque)
-  const stripeClasses = shuffle(['sv1','sv2','sv3','sv4','sv5']);
-
-  shuffle([...set]).forEach((item, idx)=>{
-    const c = document.createElement('div');
-    c.className = `card en sv ${stripeClasses[idx % stripeClasses.length]}`;
-    c.draggable = true;
-    c.textContent = item.en.toLowerCase();   // lowercase English
-    c.dataset.en = item.en.toLowerCase();
-    c.addEventListener('dragstart', e=>{
-      e.dataTransfer.setData('text/en', c.dataset.en);
-      c.classList.add('dragging');
-    });
-    c.addEventListener('dragend', ()=>c.classList.remove('dragging'));
+  shuffle([...set]).forEach((item,idx)=>{
+    const c=document.createElement('div');
+    c.className=`card en sv ${stripeClasses[idx % stripeClasses.length]}`;
+    c.draggable=true;
+    c.textContent=item.en.toLowerCase();
+    c.dataset.en=item.en.toLowerCase();
+    c.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/en',c.dataset.en); c.classList.add('dragging');});
+    c.addEventListener('dragend',()=>c.classList.remove('dragging'));
     colEn.appendChild(c);
   });
 
-  // JP cards (droppable)
   shuffle([...set]).forEach(item=>{
-    const c = document.createElement('div');
-    c.className = 'card jp';
-    c.dataset.jp = item.jp;
-    c.dataset.hira = item.hira;
-    c.dataset.connected = "";
-    c.textContent = `${item.jp}\n(${item.hira})`;
-
-    c.addEventListener('dragover', e=>e.preventDefault());
-    c.addEventListener('drop', e=>{
+    const c=document.createElement('div');
+    c.className='card jp';
+    c.dataset.jp=item.jp; c.dataset.hira=item.hira; c.dataset.connected="";
+    c.textContent=`${item.jp}\n(${item.hira})`;
+    c.addEventListener('dragover',e=>e.preventDefault());
+    c.addEventListener('drop',e=>{
       e.preventDefault();
-      const en = e.dataTransfer.getData('text/en');
-      if(!en) return;
-
-      // If already connected, unhide previous EN card
+      const en=e.dataTransfer.getData('text/en'); if(!en) return;
       if(c.dataset.connected){
-        const oldEnCard = document.querySelector(`.en[data-en="${c.dataset.connected}"]`);
-        if(oldEnCard) oldEnCard.style.visibility='visible';
+        const old=document.querySelector(`.en[data-en="${c.dataset.connected}"]`); if(old) old.style.visibility='visible';
       }
-
-      // Hide the dragged EN card
-      const enCard = document.querySelector(`.en[data-en="${en}"]`);
-      if(enCard) enCard.style.visibility='hidden';
-
-      // Combine and switch to cute blue
-      c.classList.add('combined','matchedBlue');
-      c.classList.remove('jp');
-      c.innerHTML = `<div class="enTxt">${en}</div><div class="jpTxt">${item.jp}（${item.hira}）</div>`;
-      c.dataset.connected = en;
-
-      // Save connection (jp -> en)
-      connections[item.jp] = en;
-
-      // Enable CHECK only when all 5 connected
+      const enCard=document.querySelector(`.en[data-en="${en}"]`); if(enCard) enCard.style.visibility='hidden';
+      c.classList.add('combined','matchedBlue'); c.classList.remove('jp');
+      c.innerHTML=`<div class="enTxt">${en}</div><div class="jpTxt">${item.jp}（${item.hira}）</div>`;
+      c.dataset.connected=en; connections[item.jp]=en;
       $("#checkBtn").disabled = Object.keys(connections).length !== 5;
     });
-
     colJp.appendChild(c);
   });
 
-  // Capture JP card order for top-to-bottom checking
-  jpOrder = Array.from(colJp.querySelectorAll('[data-jp]'));
-  $("#checkBtn").disabled = true;
+  jpOrder=[...colJp.querySelectorAll('[data-jp]')];
+  $("#checkBtn").disabled=true;
 }
 
-/* --------------------
-   Checking logic (top->bottom)
----------------------*/
-$("#checkBtn").addEventListener('click', ()=>{
-  $("#checkBtn").disabled = true;
-  let i = 0;
-
-  const step = setInterval(()=>{
-    if(i >= jpOrder.length){
+/* Check flow (top -> bottom) */
+$("#checkBtn").addEventListener('click',()=>{
+  $("#checkBtn").disabled=true;
+  let i=0;
+  const step=setInterval(()=>{
+    if(i>=jpOrder.length){
       clearInterval(step);
-      // slight pause then next round or results
       setTimeout(()=>{
         roundIndex++;
-        if(roundIndex < 3){ loadRound(); }
-        else { showResults(); }
-      }, 900);
+        if(roundIndex<3){ loadRound(); } else { showResults(); }
+      },900);
       return;
     }
+    const card=jpOrder[i], jp=card.dataset.jp;
+    const chosen=card.dataset.connected||"";
+    const correct = rounds.flat().find(v=>v.jp===jp)?.en.toLowerCase();
 
-    const card = jpOrder[i];
-    const jp = card.dataset.jp;
-    const chosenEn = card.dataset.connected || "";
-    const correctEn = rounds.flat().find(v=>v.jp===jp)?.en.toLowerCase();
-
-    if(chosenEn && chosenEn === correctEn){
+    if(chosen && chosen===correct){
       card.classList.remove('wrong');
-      card.classList.add('correct','locked');       // turns green
+      card.classList.add('correct','locked');   // GREEN
       playSfx('s_ding');
-      burstConfettiAt(card, 44);                    // slightly bigger confetti
+      burstConfettiAt(card,44);                 // confetti
       totalScore++;
-    } else {
+    }else{
       card.classList.remove('correct');
-      card.classList.add('wrong');                  // turns red
+      card.classList.add('wrong');              // RED
       playSfx('s_fart');
-      fartPoofAt(card);                             // even bigger fart cloud
+      fartPoofAt(card);                         // fart cloud
     }
     i++;
-  }, 850);
+  },850);
 });
 
-/* --------------------
-   Results page
----------------------*/
+/* Results */
 function showResults(){
   $("#page-round").classList.remove('active');
   $("#page-results").classList.add('active');
 
-  const pct = Math.round((totalScore/15)*100);
-  const msgEl = $("#resultMsg");
-  const scoreEl = $("#resultScore");
+  const pct=Math.round((totalScore/15)*100);
+  const msgEl=$("#resultMsg"), scoreEl=$("#resultScore");
 
-  let bgClass = 'blueGlow', msg = 'いいね！あと少しでパーフェクト！', snd = $("#s_r1114");
-  if(totalScore <= 5){ bgClass='redGlow'; msg='ブーリキュラム見てないでしょ！'; snd=$("#s_r05"); }
-  else if(totalScore <= 10){ bgClass='orangeGlow'; msg='YouTube見すぎ！ブーリキュラムもやろう！'; snd=$("#s_r610"); }
-  else if(totalScore === 15){ bgClass='goldGlow'; msg='すごい！あなたは地球で一番頭がいい！'; snd=$("#s_r15"); }
+  let bg='blueGlow', msg='いいね！あと少しでパーフェクト！', snd=$("#s_r1114");
+  if(totalScore<=5){ bg='redGlow'; msg='ブーリキュラム見てないでしょ！'; snd=$("#s_r05"); }
+  else if(totalScore<=10){ bg='orangeGlow'; msg='YouTube見すぎ！ブーリキュラムもやろう！'; snd=$("#s_r610"); }
+  else if(totalScore===15){ bg='goldGlow'; msg='すごい！あなたは地球で一番頭がいい！'; snd=$("#s_r15"); }
 
-  document.body.className = bgClass;
-  msgEl.textContent = msg;
-  scoreEl.textContent = `${totalScore}/15（${pct}%）`;
+  document.body.className=bg;
+  msgEl.textContent=msg;
+  scoreEl.textContent=`${totalScore}/15（${pct}%）`;
 
   try{ snd.currentTime=0; snd.play(); }catch(e){}
 
-  if(totalScore === 15){
+  if(totalScore===15){
     for(let i=0;i<160;i++){
       setTimeout(()=>{
-        const c = document.createElement('div');
-        c.className = 'confetti';
-        c.style.left = (Math.random()*100) + 'vw';
-        c.style.background = `hsl(${Math.random()*360},100%,60%)`;
-        c.style.animationDuration = (0.9 + Math.random()*0.9)+'s';
+        const c=document.createElement('div');
+        c.className='confetti';
+        c.style.left=(Math.random()*100)+'vw';
+        c.style.background=`hsl(${Math.random()*360},100%,60%)`;
+        c.style.animationDuration=(0.9+Math.random()*0.9)+'s';
         document.body.appendChild(c);
-        setTimeout(()=>c.remove(), 1900);
+        setTimeout(()=>c.remove(),1900);
       }, i*10);
     }
   }
@@ -491,9 +398,7 @@ function showResults(){
 
 $("#playAgain").addEventListener('click', initGame);
 
-/* --------------------
-   Start
----------------------*/
+/* Start */
 initGame();
 </script>
 </body>
