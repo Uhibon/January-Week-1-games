@@ -18,6 +18,7 @@
   --gold:#ffd166;
   --cuteBlue:#60a5fa;
   --cuteBlueGlow:0 0 14px rgba(96,165,250,.9), 0 0 36px rgba(96,165,250,.55);
+  --cardH: 140px; /* 💡 default desktop card height */
 }
 
 /* base */
@@ -61,29 +62,27 @@ footer{
 .page.active{display:block}
 
 /* Round viewport + layout */
-.round-viewport{ /* wrapper to allow smooth scrolling on mobile */
-  width:100%;
-}
+.round-viewport{ width:100%; }
 .round-wrap{
   display:flex;gap:26px;align-items:flex-start;justify-content:center;flex-wrap:wrap;margin-top:16px;
-  /* allow vertical scrolling by default; only lock while actually dragging */
-  touch-action: pan-y;
+  touch-action: pan-y; /* allow vertical scroll by default */
 }
-body.draggingTouch .round-wrap{ touch-action: none; } /* active touch-drag only */
+body.draggingTouch .round-wrap{ touch-action: none; } /* lock only while dragging */
 
 .col{flex:1 1 420px;max-width:460px;display:flex;flex-direction:column;gap:14px}
 
-/* MOBILE: side-by-side columns with their own scroll space */
+/* MOBILE: side-by-side columns + smaller cards + sticky CHECK */
 @media (max-width:700px){
+  :root{ --cardH: 104px; } /* 👈 size tweak lives here */
   .round-viewport{
-    max-height: calc(100svh - 210px); /* header + padding + actions space */
+    max-height: calc(100svh - 210px);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
   }
   .round-wrap{flex-wrap:nowrap;gap:10px}
   .col{flex:0 0 50%;max-width:50%}
-  .card{height:120px}
+  .card{ padding:14px 16px; } /* slightly tighter padding with smaller height */
   .actions{
     position: sticky; bottom: 10px; z-index: 5;
     padding-bottom: max(env(safe-area-inset-bottom), 10px);
@@ -95,7 +94,7 @@ body.draggingTouch .round-wrap{ touch-action: none; } /* active touch-drag only 
 /* Cards */
 .card{
   border-radius:24px; 
-  height:140px; 
+  height:var(--cardH);
   padding:18px 20px;
   display:flex; align-items:center; justify-content:center; text-align:center;
   font-size:clamp(1.4rem,4.6vw,2.4rem); font-weight:700; line-height:1.2;
@@ -170,7 +169,7 @@ body.draggingTouch .round-wrap{ touch-action: none; } /* active touch-drag only 
   100%{transform:translateY(110vh) rotate(720deg)}
 }
 
-/* Per-card effects (as tuned) */
+/* Per-card effects */
 .bit{
   position:fixed; width:14px; height:14px; border-radius:3px;
   pointer-events:none; z-index:20; animation:pop 760ms ease-out forwards;
@@ -191,9 +190,12 @@ body.draggingTouch .round-wrap{ touch-action: none; } /* active touch-drag only 
   100%{opacity:0; transform:translate(-50%,-50%) scale(7)}
 }
 
-/* English vertical stripes */
-@keyframes stripesV{from{background-position:0 0}to{background-position:0 140px}}
-.sv{ background-size:100% 140px; animation:stripesV 3.2s linear infinite; }
+/* English vertical stripes use card height var */
+@keyframes stripesV{
+  from{background-position:0 0}
+  to{background-position:0 var(--cardH)}
+}
+.sv{ background-size:100% var(--cardH); animation:stripesV 3.2s linear infinite; }
 .sv1{ background-image:repeating-linear-gradient(0deg, #ff7eb9 0 18px, #5ee6ff 18px 36px, #ffd166 36px 54px); }
 .sv2{ background-image:repeating-linear-gradient(0deg, #a78bfa 0 18px, #60a5fa 18px 36px, #f472b6 36px 54px); }
 .sv3{ background-image:repeating-linear-gradient(0deg, #34d399 0 18px, #fbbf24 18px 36px, #60a5fa 36px 54px); }
@@ -205,11 +207,12 @@ body.draggingTouch .round-wrap{ touch-action: none; } /* active touch-drag only 
   position:fixed; z-index:9999; pointer-events:none;
   transform:translate(-50%,-50%); will-change:transform;
   width:46vw; max-width:420px;
-  height:120px; display:flex; align-items:center; justify-content:center;
+  height:var(--cardH); /* 👈 matches card height on both desktop & mobile */
+  display:flex; align-items:center; justify-content:center;
   border-radius:24px; font-weight:1000; color:#000;
 }
 @media (min-width: 701px){
-  .drag-ghost{ width:360px; height:140px; }
+  .drag-ghost{ width:360px; }
 }
 .hoverTarget{ box-shadow:0 0 0 4px rgba(255,255,255,.25), 0 0 20px rgba(255,255,255,.25); border-color:#fff !important; }
 
@@ -221,7 +224,6 @@ hr.sep{border:0;height:1px;background:linear-gradient(90deg,transparent,#ffffff3
 <header>
   <h1>THE BOO-RICULUM</h1>
   <h2>GAMES &amp; QUIZZES</h2>
-  <!-- Mobile: two lines; Desktop: slash between -->
   <div class="subtitle-stack">
     <div class="en">January Week 1 - Vocabulary</div>
     <div class="jp">１月第１週 - 語彙</div>
@@ -396,9 +398,8 @@ function loadRound(){
   $("#checkBtn").disabled=true;
 }
 
-/* Touch drag & drop (mobile) with movement threshold (keeps scrolling natural) */
+/* Touch drag & drop (mobile) with movement threshold */
 function setupTouchDrag(){
-  const area = document.getElementById('dragArea');
   const enCards = [...document.querySelectorAll('.card.en')];
 
   let ghost=null, active=null, hoverJP=null;
@@ -420,21 +421,17 @@ function setupTouchDrag(){
     if(e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
     active = e.currentTarget;
     startX = e.clientX; startY = e.clientY;
-    dragging = false;                         // not dragging yet
-    // Don't capture yet — let normal scrolling happen until we decide to drag
+    dragging = false;
   }
 
   function maybeStartDrag(e){
     if(dragging || !active) return false;
     const dx = Math.abs(e.clientX - startX);
     const dy = Math.abs(e.clientY - startY);
-    // Tiny movement threshold; if user is mostly scrolling vertically, don't start drag
-    if (dx + dy < 8 || dy > dx + 6) return false;
-
-    // We are dragging now
+    if (dx + dy < 8 || dy > dx + 6) return false; // keep vertical scroll natural
     dragging = true;
     try{ active.setPointerCapture(e.pointerId); }catch(_){}
-    document.body.classList.add('draggingTouch'); // temporarily disables touch scroll in drag area
+    document.body.classList.add('draggingTouch');
     ghost = makeGhost(active);
     moveGhost(e);
     return true;
@@ -456,10 +453,10 @@ function setupTouchDrag(){
   function pointerMove(e){
     if(!active) return;
     if(!dragging){
-      if(!maybeStartDrag(e)) return; // still scrolling naturally
+      if(!maybeStartDrag(e)) return; // still scrolling
     }
     moveGhost(e);
-    e.preventDefault(); // only once dragging is active
+    e.preventDefault(); // only when dragging
   }
 
   function endDrag(e){
@@ -472,7 +469,7 @@ function setupTouchDrag(){
         if(target){ combineIntoJP(target, active.dataset.en); }
         ghost.remove(); ghost = null;
       }
-      document.body.classList.remove('draggingTouch'); // re-enable scrolling immediately
+      document.body.classList.remove('draggingTouch');
     }
     try{ active.releasePointerCapture && active.releasePointerCapture(e.pointerId); }catch(_){}
     active=null; hoverJP=null; dragging=false;
@@ -503,18 +500,17 @@ $("#checkBtn").addEventListener('click',()=>{
     const chosen=card.dataset.connected||"";
     const correct = rounds.flat().find(v=>v.jp===jp)?.en.toLowerCase();
 
-    // drop the blue before grading
     card.classList.remove('matchedBlue');
 
     if(chosen && chosen===correct){
       card.classList.remove('wrong');
-      card.classList.add('correct','locked');   // GREEN
+      card.classList.add('correct','locked');
       playSfx('s_ding');
       burstConfettiAt(card,44);
       totalScore++;
     }else{
       card.classList.remove('correct');
-      card.classList.add('wrong');              // RED
+      card.classList.add('wrong');
       playSfx('s_fart');
       fartPoofAt(card);
     }
