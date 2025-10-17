@@ -43,6 +43,14 @@ header h2{
   font-size:clamp(2.0rem,6.2vw,3rem);
   text-shadow:0 0 10px rgba(255,255,255,.12)
 }
+/* Mobile: two lines; Desktop: single-line feel with slash */
+.subtitle-stack{opacity:.85;font-size:.95rem;letter-spacing:.08em;display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap}
+.subtitle-stack .en::after{content:" / "; opacity:.8}
+@media (max-width:700px){
+  .subtitle-stack{flex-direction:column; gap:.1rem}
+  .subtitle-stack .en::after{content:""}
+}
+
 footer{
   margin-top:auto;padding:14px 10px;opacity:.9;font-size:1rem;
   font-family:'Cinzel',serif;
@@ -52,21 +60,39 @@ footer{
 .page{width:100%;max-width:980px;margin:0 auto;display:none;padding:8px 16px 24px}
 .page.active{display:block}
 
-/* Round layout */
+/* Round viewport + layout */
+.round-viewport{ /* wrapper to allow smooth scrolling on mobile */
+  width:100%;
+}
 .round-wrap{
   display:flex;gap:26px;align-items:flex-start;justify-content:center;flex-wrap:wrap;margin-top:16px;
-  touch-action:none; /* prevent scroll while dragging on mobile */
+  /* allow vertical scrolling by default; only lock while actually dragging */
+  touch-action: pan-y;
 }
+body.draggingTouch .round-wrap{ touch-action: none; } /* active touch-drag only */
+
 .col{flex:1 1 420px;max-width:460px;display:flex;flex-direction:column;gap:14px}
 
-/* MOBILE: keep columns side-by-side */
-@media (max-width: 700px){
+/* MOBILE: side-by-side columns with their own scroll space */
+@media (max-width:700px){
+  .round-viewport{
+    max-height: calc(100svh - 210px); /* header + padding + actions space */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
   .round-wrap{flex-wrap:nowrap;gap:10px}
   .col{flex:0 0 50%;max-width:50%}
   .card{height:120px}
+  .actions{
+    position: sticky; bottom: 10px; z-index: 5;
+    padding-bottom: max(env(safe-area-inset-bottom), 10px);
+    background: linear-gradient(180deg, transparent, rgba(11,21,48,.2) 40%, rgba(11,21,48,.5));
+    backdrop-filter: blur(2px);
+  }
 }
 
-/* Unified CARD sizing */
+/* Cards */
 .card{
   border-radius:24px; 
   height:140px; 
@@ -178,7 +204,7 @@ footer{
 .drag-ghost{
   position:fixed; z-index:9999; pointer-events:none;
   transform:translate(-50%,-50%); will-change:transform;
-  width:46vw; max-width:420px; /* good size on phones */
+  width:46vw; max-width:420px;
   height:120px; display:flex; align-items:center; justify-content:center;
   border-radius:24px; font-weight:1000; color:#000;
 }
@@ -186,8 +212,8 @@ footer{
   .drag-ghost{ width:360px; height:140px; }
 }
 .hoverTarget{ box-shadow:0 0 0 4px rgba(255,255,255,.25), 0 0 20px rgba(255,255,255,.25); border-color:#fff !important; }
+
 hr.sep{border:0;height:1px;background:linear-gradient(90deg,transparent,#ffffff33,transparent);margin:12px 0 8px}
-.subtitle{opacity:.85;font-size:.95rem;letter-spacing:.08em}
 </style>
 </head>
 <body>
@@ -195,15 +221,21 @@ hr.sep{border:0;height:1px;background:linear-gradient(90deg,transparent,#ffffff3
 <header>
   <h1>THE BOO-RICULUM</h1>
   <h2>GAMES &amp; QUIZZES</h2>
-  <div class="subtitle">January Week 1 - Vocabulary / １月第１週 - 語彙</div>
+  <!-- Mobile: two lines; Desktop: slash between -->
+  <div class="subtitle-stack">
+    <div class="en">January Week 1 - Vocabulary</div>
+    <div class="jp">１月第１週 - 語彙</div>
+  </div>
   <hr class="sep">
 </header>
 
 <!-- PAGE: Round container -->
 <section id="page-round" class="page active">
-  <div class="round-wrap" id="dragArea">
-    <div id="col-en" class="col"></div>
-    <div id="col-jp" class="col"></div>
+  <div class="round-viewport">
+    <div class="round-wrap" id="dragArea">
+      <div id="col-en" class="col"></div>
+      <div id="col-jp" class="col"></div>
+    </div>
   </div>
   <div class="actions">
     <button id="checkBtn" class="btn btn-green" disabled>CHECK</button>
@@ -264,7 +296,7 @@ function playSfx(id){
 }
 function centerOf(el){const r=el.getBoundingClientRect();return{ x:r.left+r.width/2, y:r.top+r.height/2 };}
 
-/* Effects (as tuned) */
+/* Effects */
 function burstConfettiAt(el,count=44){
   const {x,y}=centerOf(el);
   for(let i=0;i<count;i++){
@@ -307,7 +339,6 @@ function initGame(){
 /* Combine helper (used by both mouse & touch) */
 function combineIntoJP(jpCard, enText){
   if(!jpCard || !jpCard.dataset) return;
-  // if already connected, unhide previous EN
   if(jpCard.dataset.connected){
     const old=document.querySelector(`.en[data-en="${jpCard.dataset.connected}"]`);
     if(old) old.style.visibility='visible';
@@ -365,75 +396,94 @@ function loadRound(){
   $("#checkBtn").disabled=true;
 }
 
-/* Touch drag & drop (mobile) */
+/* Touch drag & drop (mobile) with movement threshold (keeps scrolling natural) */
 function setupTouchDrag(){
   const area = document.getElementById('dragArea');
   const enCards = [...document.querySelectorAll('.card.en')];
+
   let ghost=null, active=null, hoverJP=null;
+  let startX=0, startY=0, dragging=false;
+
+  function makeGhost(fromCard){
+    const g = fromCard.cloneNode(true);
+    g.className = g.className.replace(/\bcard\b/,'').trim();
+    g.classList.add('drag-ghost');
+    const cs = getComputedStyle(fromCard);
+    g.style.backgroundImage = cs.backgroundImage;
+    g.style.backgroundSize  = cs.backgroundSize;
+    g.style.backgroundPosition = cs.backgroundPosition;
+    document.body.appendChild(g);
+    return g;
+  }
 
   function pointerDown(e){
-    // only for touch/pencil; mouse stays with native dnd
     if(e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
-    const card = e.currentTarget;
-    active = card;
-    card.setPointerCapture(e.pointerId);
+    active = e.currentTarget;
+    startX = e.clientX; startY = e.clientY;
+    dragging = false;                         // not dragging yet
+    // Don't capture yet — let normal scrolling happen until we decide to drag
+  }
 
-    // create ghost
-    ghost = card.cloneNode(true);
-    ghost.classList.add('drag-ghost');
-    // carry over stripe backgrounds
-    const cs = getComputedStyle(card);
-    ghost.style.backgroundImage = cs.backgroundImage;
-    ghost.style.backgroundSize  = cs.backgroundSize;
-    ghost.style.backgroundPosition = cs.backgroundPosition;
-    document.body.appendChild(ghost);
+  function maybeStartDrag(e){
+    if(dragging || !active) return false;
+    const dx = Math.abs(e.clientX - startX);
+    const dy = Math.abs(e.clientY - startY);
+    // Tiny movement threshold; if user is mostly scrolling vertically, don't start drag
+    if (dx + dy < 8 || dy > dx + 6) return false;
+
+    // We are dragging now
+    dragging = true;
+    try{ active.setPointerCapture(e.pointerId); }catch(_){}
+    document.body.classList.add('draggingTouch'); // temporarily disables touch scroll in drag area
+    ghost = makeGhost(active);
     moveGhost(e);
-
-    e.preventDefault();
+    return true;
   }
 
   function moveGhost(e){
     if(!ghost) return;
     ghost.style.left = e.clientX + 'px';
     ghost.style.top  = e.clientY + 'px';
-
-    // find JP under finger
     const el = document.elementFromPoint(e.clientX, e.clientY);
-    const candidate = el && el.closest && el.closest('[data-jp]');
-    if(candidate !== hoverJP){
+    const cand = el && el.closest && el.closest('[data-jp]');
+    if(cand !== hoverJP){
       if(hoverJP) hoverJP.classList.remove('hoverTarget');
-      hoverJP = candidate;
+      hoverJP = cand;
       if(hoverJP) hoverJP.classList.add('hoverTarget');
     }
   }
 
   function pointerMove(e){
-    if(!ghost) return;
+    if(!active) return;
+    if(!dragging){
+      if(!maybeStartDrag(e)) return; // still scrolling naturally
+    }
     moveGhost(e);
+    e.preventDefault(); // only once dragging is active
   }
 
-  function pointerUp(e){
-    if(active) active.releasePointerCapture(e.pointerId);
-    if(hoverJP) hoverJP.classList.remove('hoverTarget');
-
-    if(ghost){
-      // drop if over a JP card
-      const el = document.elementFromPoint(e.clientX, e.clientY);
-      const target = el && el.closest && el.closest('[data-jp]');
-      if(target && active){
-        combineIntoJP(target, active.dataset.en);
+  function endDrag(e){
+    if(!active) return;
+    if(dragging){
+      if(hoverJP) hoverJP.classList.remove('hoverTarget');
+      if(ghost){
+        const el = document.elementFromPoint(e.clientX, e.clientY);
+        const target = el && el.closest && el.closest('[data-jp]');
+        if(target){ combineIntoJP(target, active.dataset.en); }
+        ghost.remove(); ghost = null;
       }
-      ghost.remove(); ghost=null;
+      document.body.classList.remove('draggingTouch'); // re-enable scrolling immediately
     }
-    active=null; hoverJP=null;
+    try{ active.releasePointerCapture && active.releasePointerCapture(e.pointerId); }catch(_){}
+    active=null; hoverJP=null; dragging=false;
   }
 
   enCards.forEach(c=>{
-    c.addEventListener('pointerdown', pointerDown);
+    c.addEventListener('pointerdown', pointerDown, {passive:true});
   });
-  area.addEventListener('pointermove', pointerMove);
-  area.addEventListener('pointerup', pointerUp);
-  area.addEventListener('pointercancel', pointerUp);
+  window.addEventListener('pointermove', pointerMove, {passive:true});
+  window.addEventListener('pointerup', endDrag, {passive:true});
+  window.addEventListener('pointercancel', endDrag, {passive:true});
 }
 
 /* Check flow (top -> bottom) */
