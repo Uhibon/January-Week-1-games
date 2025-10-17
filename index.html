@@ -53,8 +53,18 @@ footer{
 .page.active{display:block}
 
 /* Round layout */
-.round-wrap{display:flex;gap:26px;align-items:flex-start;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.round-wrap{
+  display:flex;gap:26px;align-items:flex-start;justify-content:center;flex-wrap:wrap;margin-top:16px;
+  touch-action:none; /* prevent scroll while dragging on mobile */
+}
 .col{flex:1 1 420px;max-width:460px;display:flex;flex-direction:column;gap:14px}
+
+/* MOBILE: keep columns side-by-side */
+@media (max-width: 700px){
+  .round-wrap{flex-wrap:nowrap;gap:10px}
+  .col{flex:0 0 50%;max-width:50%}
+  .card{height:120px}
+}
 
 /* Unified CARD sizing */
 .card{
@@ -67,21 +77,18 @@ footer{
   word-break:break-word;
 }
 .card.en{
-  color:#000;                 /* bold black text */
-  font-weight:1000;           /* extra bold */
-  font-size:clamp(1.8rem,5.8vw,3rem);  /* BIGGER */
-  letter-spacing:-.01em;
-  text-transform:none;        /* keep lowercase exactly */
+  color:#000; font-weight:1000;
+  font-size:clamp(1.8rem,5.8vw,3rem);
+  letter-spacing:-.01em; text-transform:none;
 }
 .card.jp{
   background:transparent; border:3px dashed var(--outline); color:var(--ink);
   white-space:pre-line;
 }
 .card.dragging{opacity:.65; transform:scale(1.04)}
-/* FIX: don't dim when locked—just disable interaction */
-.card.locked{pointer-events:none} /* removed opacity reduction */
+.card.locked{pointer-events:none} /* no dim */
 
-/* After drop — matched visual before grading */
+/* Combined before grading */
 .card.combined{ border:0; display:flex; flex-direction:column; gap:8px; }
 .card.matchedBlue{
   background:var(--cuteBlue)!important; 
@@ -91,7 +98,7 @@ footer{
 .card.combined .enTxt{font-size:1.05em; font-weight:1000; letter-spacing:-.01em}
 .card.combined .jpTxt{font-size:.7em; opacity:.98}
 
-/* FIX: stronger selectors so grading always wins */
+/* Grading wins over everything */
 .card.correct{background:var(--green) !important; color:#062a12 !important; border:0 !important}
 .card.wrong  {background:var(--red)   !important; color:#fff     !important; border:0 !important; animation:shake .45s}
 @keyframes shake{
@@ -112,7 +119,7 @@ footer{
 .btn-green{ background:var(--check); color:#062a12; box-shadow:var(--checkGlow) }
 .btn-green:disabled{filter:saturate(.2) brightness(.8); box-shadow:none; cursor:not-allowed}
 
-/* Results — large & centered */
+/* Results */
 #page-results .result-box{
   min-height:62vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
 }
@@ -167,7 +174,18 @@ footer{
 .sv4{ background-image:repeating-linear-gradient(0deg, #fca5a5 0 18px, #86efac 18px 36px, #93c5fd 36px 54px); }
 .sv5{ background-image:repeating-linear-gradient(0deg, #f9a8d4 0 18px, #fef08a 18px 36px, #6ee7b7 36px 54px); }
 
-/* Layout helpers */
+/* Touch drag helper visuals */
+.drag-ghost{
+  position:fixed; z-index:9999; pointer-events:none;
+  transform:translate(-50%,-50%); will-change:transform;
+  width:46vw; max-width:420px; /* good size on phones */
+  height:120px; display:flex; align-items:center; justify-content:center;
+  border-radius:24px; font-weight:1000; color:#000;
+}
+@media (min-width: 701px){
+  .drag-ghost{ width:360px; height:140px; }
+}
+.hoverTarget{ box-shadow:0 0 0 4px rgba(255,255,255,.25), 0 0 20px rgba(255,255,255,.25); border-color:#fff !important; }
 hr.sep{border:0;height:1px;background:linear-gradient(90deg,transparent,#ffffff33,transparent);margin:12px 0 8px}
 .subtitle{opacity:.85;font-size:.95rem;letter-spacing:.08em}
 </style>
@@ -183,7 +201,7 @@ hr.sep{border:0;height:1px;background:linear-gradient(90deg,transparent,#ffffff3
 
 <!-- PAGE: Round container -->
 <section id="page-round" class="page active">
-  <div class="round-wrap">
+  <div class="round-wrap" id="dragArea">
     <div id="col-en" class="col"></div>
     <div id="col-jp" class="col"></div>
   </div>
@@ -246,7 +264,7 @@ function playSfx(id){
 }
 function centerOf(el){const r=el.getBoundingClientRect();return{ x:r.left+r.width/2, y:r.top+r.height/2 };}
 
-/* Effects */
+/* Effects (as tuned) */
 function burstConfettiAt(el,count=44){
   const {x,y}=centerOf(el);
   for(let i=0;i<count;i++){
@@ -286,6 +304,26 @@ function initGame(){
   loadRound();
 }
 
+/* Combine helper (used by both mouse & touch) */
+function combineIntoJP(jpCard, enText){
+  if(!jpCard || !jpCard.dataset) return;
+  // if already connected, unhide previous EN
+  if(jpCard.dataset.connected){
+    const old=document.querySelector(`.en[data-en="${jpCard.dataset.connected}"]`);
+    if(old) old.style.visibility='visible';
+  }
+  const enCard=document.querySelector(`.en[data-en="${enText}"]`);
+  if(enCard) enCard.style.visibility='hidden';
+
+  const jp = jpCard.dataset.jp, hira = jpCard.dataset.hira;
+  jpCard.classList.add('combined','matchedBlue'); jpCard.classList.remove('jp');
+  jpCard.innerHTML = `<div class="enTxt">${enText}</div><div class="jpTxt">${jp}（${hira}）</div>`;
+  jpCard.dataset.connected = enText;
+  connections[jp] = enText;
+
+  $("#checkBtn").disabled = Object.keys(connections).length !== 5;
+}
+
 /* Build a round */
 function loadRound(){
   connections={};
@@ -297,7 +335,7 @@ function loadRound(){
   shuffle([...set]).forEach((item,idx)=>{
     const c=document.createElement('div');
     c.className=`card en sv ${stripeClasses[idx % stripeClasses.length]}`;
-    c.draggable=true;
+    c.draggable=true;                    // desktop dnd
     c.textContent=item.en.toLowerCase();
     c.dataset.en=item.en.toLowerCase();
     c.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/en',c.dataset.en); c.classList.add('dragging');});
@@ -310,24 +348,92 @@ function loadRound(){
     c.className='card jp';
     c.dataset.jp=item.jp; c.dataset.hira=item.hira; c.dataset.connected="";
     c.textContent=`${item.jp}\n(${item.hira})`;
-    c.addEventListener('dragover',e=>e.preventDefault());
-    c.addEventListener('drop',e=>{
+    // desktop drop targets
+    c.addEventListener('dragover', e=>e.preventDefault());
+    c.addEventListener('drop', e=>{
       e.preventDefault();
       const en=e.dataTransfer.getData('text/en'); if(!en) return;
-      if(c.dataset.connected){
-        const old=document.querySelector(`.en[data-en="${c.dataset.connected}"]`); if(old) old.style.visibility='visible';
-      }
-      const enCard=document.querySelector(`.en[data-en="${en}"]`); if(enCard) enCard.style.visibility='hidden';
-      c.classList.add('combined','matchedBlue'); c.classList.remove('jp');
-      c.innerHTML=`<div class="enTxt">${en}</div><div class="jpTxt">${item.jp}（${item.hira}）</div>`;
-      c.dataset.connected=en; connections[item.jp]=en;
-      $("#checkBtn").disabled = Object.keys(connections).length !== 5;
+      combineIntoJP(c, en);
     });
     colJp.appendChild(c);
   });
 
+  // Touch dragging setup
+  setupTouchDrag();
+
   jpOrder=[...colJp.querySelectorAll('[data-jp]')];
   $("#checkBtn").disabled=true;
+}
+
+/* Touch drag & drop (mobile) */
+function setupTouchDrag(){
+  const area = document.getElementById('dragArea');
+  const enCards = [...document.querySelectorAll('.card.en')];
+  let ghost=null, active=null, hoverJP=null;
+
+  function pointerDown(e){
+    // only for touch/pencil; mouse stays with native dnd
+    if(e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
+    const card = e.currentTarget;
+    active = card;
+    card.setPointerCapture(e.pointerId);
+
+    // create ghost
+    ghost = card.cloneNode(true);
+    ghost.classList.add('drag-ghost');
+    // carry over stripe backgrounds
+    const cs = getComputedStyle(card);
+    ghost.style.backgroundImage = cs.backgroundImage;
+    ghost.style.backgroundSize  = cs.backgroundSize;
+    ghost.style.backgroundPosition = cs.backgroundPosition;
+    document.body.appendChild(ghost);
+    moveGhost(e);
+
+    e.preventDefault();
+  }
+
+  function moveGhost(e){
+    if(!ghost) return;
+    ghost.style.left = e.clientX + 'px';
+    ghost.style.top  = e.clientY + 'px';
+
+    // find JP under finger
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const candidate = el && el.closest && el.closest('[data-jp]');
+    if(candidate !== hoverJP){
+      if(hoverJP) hoverJP.classList.remove('hoverTarget');
+      hoverJP = candidate;
+      if(hoverJP) hoverJP.classList.add('hoverTarget');
+    }
+  }
+
+  function pointerMove(e){
+    if(!ghost) return;
+    moveGhost(e);
+  }
+
+  function pointerUp(e){
+    if(active) active.releasePointerCapture(e.pointerId);
+    if(hoverJP) hoverJP.classList.remove('hoverTarget');
+
+    if(ghost){
+      // drop if over a JP card
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const target = el && el.closest && el.closest('[data-jp]');
+      if(target && active){
+        combineIntoJP(target, active.dataset.en);
+      }
+      ghost.remove(); ghost=null;
+    }
+    active=null; hoverJP=null;
+  }
+
+  enCards.forEach(c=>{
+    c.addEventListener('pointerdown', pointerDown);
+  });
+  area.addEventListener('pointermove', pointerMove);
+  area.addEventListener('pointerup', pointerUp);
+  area.addEventListener('pointercancel', pointerUp);
 }
 
 /* Check flow (top -> bottom) */
@@ -347,7 +453,7 @@ $("#checkBtn").addEventListener('click',()=>{
     const chosen=card.dataset.connected||"";
     const correct = rounds.flat().find(v=>v.jp===jp)?.en.toLowerCase();
 
-    // FIX: drop the blue state so red/green shows clearly
+    // drop the blue before grading
     card.classList.remove('matchedBlue');
 
     if(chosen && chosen===correct){
