@@ -66,24 +66,27 @@ footer{
 .round-viewport{ width:100%; }
 .round-wrap{
   display:flex;gap:26px;align-items:flex-start;justify-content:center;flex-wrap:wrap;margin-top:16px;
-  touch-action: pan-y; /* allow vertical scroll by default */
 }
-body.draggingTouch .round-wrap{ touch-action: none; } /* lock only while dragging */
 .col{flex:1 1 420px;max-width:460px;display:flex;flex-direction:column;gap:14px}
+
+/* ✅ Allow vertical scroll gestures anywhere; lock only during active drag */
+.round-viewport,
+.round-wrap,
+.card,
+.col { touch-action: pan-y; }
+body.draggingTouch .round-wrap{ touch-action: none; }
 
 /* MOBILE layout improvements */
 @media (max-width:700px){
   :root{ --cardH: 104px; }                 /* smaller, uniform mobile cards */
-  /* Make the page a flex column so the viewport can flex and scroll fully */
   #page-round.page.active{display:flex; flex-direction:column; padding-bottom:0;}
   .round-viewport{
     flex:1 1 auto;
-    min-height:0;                           /* critical so it can actually shrink */
-    max-height:unset;                       /* let flex sizing decide */
+    min-height:0;
     overflow-y:auto;
     -webkit-overflow-scrolling:touch;
     overscroll-behavior-y:contain;
-    padding-bottom: calc(var(--actionsH) + env(safe-area-inset-bottom) + 14px); /* space so last cards aren't under CHECK */
+    padding-bottom: calc(var(--actionsH) + env(safe-area-inset-bottom) + 14px); /* keep bottom cards clear of CHECK */
   }
   .round-wrap{flex-wrap:nowrap;gap:10px}
   .col{flex:0 0 50%;max-width:50%}
@@ -407,23 +410,36 @@ function loadRound(){
   $("#checkBtn").disabled=true;
 }
 
-/* Touch drag & drop (mobile) with movement threshold */
+/* Touch drag & drop (mobile): long-press or diagonal move to start; scroll otherwise */
 function setupTouchDrag(){
   const enCards = [...document.querySelectorAll('.card.en')];
 
   let ghost=null, active=null, hoverJP=null;
   let startX=0, startY=0, dragging=false;
+  let pressTimer=null;
+
+  const LONG_PRESS_MS = 220;   // hold to start drag
+  const MOVE_THRESH  = 12;     // px before considering deliberate move
 
   function makeGhost(fromCard){
     const g = fromCard.cloneNode(true);
     g.className = g.className.replace(/\bcard\b/,'').trim();
     g.classList.add('drag-ghost');
     const cs = getComputedStyle(fromCard);
-    g.style.backgroundImage = cs.backgroundImage;
-    g.style.backgroundSize  = cs.backgroundSize;
+    g.style.backgroundImage  = cs.backgroundImage;
+    g.style.backgroundSize   = cs.backgroundSize;
     g.style.backgroundPosition = cs.backgroundPosition;
     document.body.appendChild(g);
     return g;
+  }
+
+  function beginDrag(e){
+    if (dragging || !active) return;
+    dragging = true;
+    try{ active.setPointerCapture(e.pointerId); }catch(_){}
+    document.body.classList.add('draggingTouch');
+    ghost = makeGhost(active);
+    moveGhost(e);
   }
 
   function pointerDown(e){
@@ -431,19 +447,30 @@ function setupTouchDrag(){
     active = e.currentTarget;
     startX = e.clientX; startY = e.clientY;
     dragging = false;
+
+    clearTimeout(pressTimer);
+    pressTimer = setTimeout(()=> beginDrag(e), LONG_PRESS_MS);
   }
 
-  function maybeStartDrag(e){
-    if(dragging || !active) return false;
+  function pointerMove(e){
+    if(!active) return;
+
     const dx = Math.abs(e.clientX - startX);
     const dy = Math.abs(e.clientY - startY);
-    if (dx + dy < 8 || dy > dx + 6) return false; // keep vertical scroll natural
-    dragging = true;
-    try{ active.setPointerCapture(e.pointerId); }catch(_){}
-    document.body.classList.add('draggingTouch');
-    ghost = makeGhost(active);
-    moveGhost(e);
-    return true;
+
+    // Cancel long-press if clearly scrolling vertically or we moved enough
+    if (!dragging && (dy > dx + 8 || dx + dy > MOVE_THRESH)) {
+      clearTimeout(pressTimer);
+    }
+    // Start drag immediately on clear sideways/diagonal motion
+    if (!dragging && (dx > dy + 10) && (dx + dy > MOVE_THRESH)) {
+      beginDrag(e);
+    }
+
+    if (dragging){
+      moveGhost(e);
+      e.preventDefault(); // actively block scroll only during drag
+    }
   }
 
   function moveGhost(e){
@@ -459,17 +486,10 @@ function setupTouchDrag(){
     }
   }
 
-  function pointerMove(e){
-    if(!active) return;
-    if(!dragging){
-      if(!maybeStartDrag(e)) return; // still scrolling
-    }
-    moveGhost(e);
-    e.preventDefault(); // only when dragging
-  }
-
   function endDrag(e){
+    clearTimeout(pressTimer);
     if(!active) return;
+
     if(dragging){
       if(hoverJP) hoverJP.classList.remove('hoverTarget');
       if(ghost){
@@ -480,6 +500,7 @@ function setupTouchDrag(){
       }
       document.body.classList.remove('draggingTouch');
     }
+
     try{ active.releasePointerCapture && active.releasePointerCapture(e.pointerId); }catch(_){}
     active=null; hoverJP=null; dragging=false;
   }
@@ -487,9 +508,10 @@ function setupTouchDrag(){
   enCards.forEach(c=>{
     c.addEventListener('pointerdown', pointerDown, {passive:true});
   });
-  window.addEventListener('pointermove', pointerMove, {passive:true});
-  window.addEventListener('pointerup', endDrag, {passive:true});
-  window.addEventListener('pointercancel', endDrag, {passive:true});
+  // passive:false so preventDefault works while dragging to stop scroll
+  window.addEventListener('pointermove',  pointerMove, {passive:false});
+  window.addEventListener('pointerup',    endDrag,     {passive:true});
+  window.addEventListener('pointercancel',endDrag,     {passive:true});
 }
 
 /* Check flow (top -> bottom) */
